@@ -605,11 +605,12 @@ Messaging.sendEmail(new Messaging.SingleEmailMessage[] { email });  */
 
                 if (isOrderLien){
                     porec.buildertek__Date_Lien_Release_Signed__c = Date.valueOf(Datetime.now().format('yyyy-MM-dd'));
+                    porec.buildertek__Date_Confirmed__c = Date.today();
                 } else{
                     porec.buildertek__Customer_Accepted_Date__c = nowDT;
                     porec.buildertek__Rejection_Reason__c = '';
                     porec.buildertek__Status__c = 'Vendor Accepted';
-                    porec.buildertek__Date_Confirmed__c = Date.today();
+                    
                 }
                 update porec;
             }
