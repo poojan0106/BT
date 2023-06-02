@@ -1663,6 +1663,9 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
       var GanttToolbar;
       var wbsObj={};
 
+      console.log('bryntum ==> ',bryntum);
+      console.log('bryntum.gantt ==> ',bryntum.gantt);
+      console.log('bryntum.gantt.Toolbar ==> ',bryntum.gantt.Toolbar);
 
       var loc = window.location.href;
       var domName = loc.split(".lightning.force.com")[0].split("https://")[1];
@@ -2987,38 +2990,23 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
                             }
                         }
                     }*/
-        console.log('ids', renderData.taskRecord.id.split('_')[0]);
-        console.log('values', renderData.taskRecord.wbsValue._value);
 
         wbsObj[renderData.taskRecord.wbsValue._value]=renderData.taskRecord.id.split('_')[0];
         // wbsObj[renderData.taskRecord.id.split('_')[0]]=renderData.taskRecord.wbsValue._value;
 
-        console.log({wbsObj});
-                    
         var that = this;
         that.wpsValue = wbsObj;
 
-        console.log('Out side  wpsBoolean ==>', that.wpsBoolean);
-          
           if (that.wpsBoolean == undefined || that.wpsBoolean == null) {
-            console.log('*** null check');
             that.wpsBoolean = false;
-            console.log('Inside wpsBoolean ==>', that.wpsBoolean);
           }
-
-
-        console.log('n3Test ==>', that.wpsValue);
-        console.log('wpsBoolean ==>', that.wpsBoolean);
 
           try {
             var that = this;
-            console.log('*** 0');
-            console.log('that.wpsBoolean ==>' + that.wpsBoolean);
-
             if (that.wpsBoolean == false) {
               that.wpsValue = wbsObj;
               that.wpsBoolean = true;
-  
+
               console.log('*** 1');
               setTimeout(() => {
                 setWBSValue({
@@ -3031,12 +3019,12 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
                   .catch(function (error) {
                     console.log('Error from apex call in setWBSValue');
                   });
-    
+
 
               },5000);
-             
+
                 console.log('*** 2');
-  
+
             }
           } catch (error) {
             console.log('Error in custom WBS logic');

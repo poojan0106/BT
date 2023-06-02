@@ -8,6 +8,7 @@
     <aura:attribute name="saveAndNew" type="Boolean" default="false" />
    <aura:attribute name="parentprojectRecordId" type="String" default="" />
    <aura:attribute name="parentRecordId" type="String" default="" />
+   <aura:attribute name="parentOppRecordId" type="String" default="" />
     <aura:attribute name="Spinner" type="boolean" default="false"/>
 
     <aura:if isTrue="{!v.Spinner}">
@@ -40,7 +41,6 @@
                     <div class="slds-p-around_medium" style="background-color:white;">
                         <lightning:layout multipleRows="true">
                             <aura:iteration items="{!v.listOfFields0}" var="field">
-                                {!field.name}
                                 <lightning:layoutItem size="12" mediumDeviceSize="6" padding="around-small">
                                     <aura:if isTrue="{!or(field.name=='buildertek__Project__c',field.name=='Name')}">
                                         <aura:if isTrue="{!field.name=='Name'}" >
@@ -52,8 +52,7 @@
 
                                         <aura:set attribute="else">
                                             <aura:if isTrue="{!field.name=='buildertek__Opportunity__c'}" >
-                                                {!v.parentprojectRecordId}
-                                                <lightning:inputField fieldName="{!field.name}" value="{!v.parentprojectRecordId}" />
+                                                <lightning:inputField fieldName="{!field.name}" value="{!v.parentOppRecordId}" />
                                                 <aura:set attribute="else">
                                                     <lightning:inputField fieldName="{!field.name}"/>
                                                 </aura:set>
