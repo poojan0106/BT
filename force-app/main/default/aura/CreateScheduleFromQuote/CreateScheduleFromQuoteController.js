@@ -8,7 +8,11 @@
         console.log('handleSubmit:::');
         component.set("v.isDisabled", true);
         event.preventDefault(); // Prevent default submit
+        var quote = component.get('v.quoteRecord');
+        const projectValue = quote.fields.buildertek__Project__c.value;
+        console.log("output value" , projectValue);
         var fields = event.getParam("fields");
+        fields.buildertek__Project__c = projectValue ;
         component.find('recordViewForm').submit(fields); // Submit form
     
     },

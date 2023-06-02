@@ -514,8 +514,7 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
             thatThis.newTaskRecordCreate["buildertek__Finish__c"] = response; // newTaskeDate[2]+'-'+newTaskeDate[1]+'-'+newTaskeDate[0];
             if (thatThis.template.querySelectorAll("lightning-input")) {
               if (
-                thatThis.template.querySelectorAll("lightning-input")[3]
-                  .label == "End Date"
+                thatThis.template.querySelectorAll("lightning-input")[3].label == "End Date"
               ) {
                 thatThis.template.querySelectorAll("lightning-input")[3].value =
                   thatThis.newTaskRecordCreate["buildertek__Finish__c"];
@@ -557,8 +556,7 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
             thatThis.newTaskRecordCreate["buildertek__Finish__c"] =
               newTaskeDate; // newTaskeDate[2]+'-'+newTaskeDate[1]+'-'+newTaskeDate[0];
             if (
-              thatThis.template.querySelectorAll("lightning-input")[3].label ==
-              "End Date"
+              thatThis.template.querySelectorAll("lightning-input")[3].label == "End Date"
             ) {
               thatThis.template.querySelectorAll("lightning-input")[3].value =
                 thatThis.newTaskRecordCreate["buildertek__Finish__c"];
@@ -1665,7 +1663,14 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
 
       console.log('bryntum ==> ',bryntum);
       console.log('bryntum.gantt ==> ',bryntum.gantt);
-      console.log('bryntum.gantt.Toolbar ==> ',bryntum.gantt.Toolbar);
+      try {
+        // console.log('bryntum.gantt.TaskModel.fields ',bryntum.gantt.TaskModel);
+        const temp = new GANTTModule();
+        // console.log('temp data ',temp);
+        // console.log('temp data ',temp.setManuallyScheduled);
+      } catch (error) {
+        console.log('error ',error);
+      }
 
       var loc = window.location.href;
       var domName = loc.split(".lightning.force.com")[0].split("https://")[1];
@@ -1718,11 +1723,13 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
         }
       }
       this.scheduleItemsDataList = scheduleDataList;
-
+      console.log('boolList:- '+ this.boolList);
+      console.log('manuallyScheduledList:- '+ this.boolList[3]);
       var formatedSchData = formatData(
         this.scheduleData,
         this.scheduleItemsData,
-        this.scheduleItemsDataList
+        this.scheduleItemsDataList,
+        this.boolList[3]
       );
       console.log("=== formatedSchData ===");
       console.log({
