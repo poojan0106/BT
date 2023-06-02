@@ -42,6 +42,8 @@
             <lightning:inputField   fieldName="buildertek__Description__c"  /> 
             <lightning:inputField  fieldName="buildertek__Initial_Start_Date__c" required="true" />
             <lightning:inputField fieldName="buildertek__Project_Managers__c" />
+            <lightning:inputField fieldName="buildertek__Project__c" value="{!v.recordFields.buildertek__Project__c}" />
+
         </div>
         <footer aura:id="footer" class="slds-modal__footer">
             <lightning:button variant="neutral" title="Cancel" label="Cancel" onclick="{! c.closeModel }" />
