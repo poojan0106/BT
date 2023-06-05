@@ -513,11 +513,15 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
             var newTaskeDate = response; //.toLocaleDateString().split('/');
             thatThis.newTaskRecordCreate["buildertek__Finish__c"] = response; // newTaskeDate[2]+'-'+newTaskeDate[1]+'-'+newTaskeDate[0];
             if (thatThis.template.querySelectorAll("lightning-input")) {
-              if (
-                thatThis.template.querySelectorAll("lightning-input")[3].label == "End Date"
-              ) {
-                thatThis.template.querySelectorAll("lightning-input")[3].value =
-                  thatThis.newTaskRecordCreate["buildertek__Finish__c"];
+              try {
+                if (
+                  thatThis.template.querySelectorAll("lightning-input")[3].label == "End Date"
+                ) {
+                  thatThis.template.querySelectorAll("lightning-input")[3].value =
+                    thatThis.newTaskRecordCreate["buildertek__Finish__c"];
+                }
+              } catch (error) {
+                console.log('log one error:- '+error);
               }
             }
           });
@@ -555,6 +559,7 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
             var newTaskeDate = response; //.toLocaleDateString().split('/');
             thatThis.newTaskRecordCreate["buildertek__Finish__c"] =
               newTaskeDate; // newTaskeDate[2]+'-'+newTaskeDate[1]+'-'+newTaskeDate[0];
+              console.log('log 2.');
             if (
               thatThis.template.querySelectorAll("lightning-input")[3].label == "End Date"
             ) {
@@ -1231,6 +1236,7 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
     }
   }
   inputChange(event) {
+    console.log('log 3.');
     if (event.currentTarget.label == "Name") {
       this.newTaskPopupName = event.currentTarget.value;
     } else if (event.currentTarget.label == "Lag") {

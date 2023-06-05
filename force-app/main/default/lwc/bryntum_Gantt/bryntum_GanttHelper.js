@@ -2,7 +2,6 @@ import  insertUpdateTask from '@salesforce/apex/BT_NewGanttChartCls.insertUpdate
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 
 function formatData(scheduleData,scheduleItemsData,scheduleItemsDataList, manuallyscheduledvalue){
-    console.log('manuallyScheduledvalue :- '+manuallyscheduledvalue);
     var taskData = scheduleItemsData;
     var taskDependencyData = [];
     var resourceRowData = [];
