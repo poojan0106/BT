@@ -11,6 +11,7 @@
                  component.set("v.projectName", response.getReturnValue());
             }
             else{
+                component.set("v.Spinner", false);
                 var toastEvent = $A.get("e.force:showToast");
                 toastEvent.setParams({
                 "type": 'error',
