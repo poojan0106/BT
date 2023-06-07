@@ -140,11 +140,9 @@ public without sharing class ChangeOrderTriggerHandler {
                         if(changeOrder.buildertek__Budget_Line__c == changeOrder2.buildertek__Budget_Line__c && changeOrder.buildertek__Budget_Line__c != null){
                             //check if the name if the budget line is same as the name of the change order + ' budget line'
                             string Name  = changeOrder.Name + ' budget line';
-                            buildertek__Budget_Item__c  oldBudgetLine = [SELECT Id, buildertek__Item_Name__c, buildertek__Total_Costs__c, Name FROM buildertek__Budget_Item__c WHERE ID =: changeOrder.buildertek__Budget_Line__c];
+                            buildertek__Budget_Item__c  oldBudgetLine = [SELECT Id, buildertek__Item_Name__c, Name FROM buildertek__Budget_Item__c WHERE ID =: changeOrder.buildertek__Budget_Line__c];
                             if(oldBudgetLine.Name == Name){
                                 oldBudgetLine.buildertek__CO_Total__c = changeOrder.buildertek__Total_Amount_Tax__c;
-                                //3314
-                                oldBudgetLine.buildertek__Unit_Price__c=changeOrder.buildertek__Total_of_SubTotal__c;
                                 update oldBudgetLine;
                             }
                         }
@@ -271,7 +269,6 @@ public without sharing class ChangeOrderTriggerHandler {
                 budgetLine.Name = changeOrder.Name + ' budget line';
                 budgetLine.buildertek__Budget__c = changeOrder.buildertek__Budget__c;
                 budgetLine.buildertek__Group__c = budgetLineGroupId;
-                budgetLine.buildertek__Unit_Price__c=changeOrder.buildertek__Total_of_SubTotal__c;
                 budgetLineMap.put(changeOrder.Id, budgetLine);
             }
             
