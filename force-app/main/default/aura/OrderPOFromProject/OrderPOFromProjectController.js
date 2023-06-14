@@ -788,5 +788,61 @@
 		component.set("v.isExpanded", isExpanded);
 	},
 
+	onclicknun: function(component, event, helper) {
+		component.set("v.emailnun", false);
+		component.set("v.emailwrite", true);
+	},
+	
+	cancleadd: function(component, event, helper) {
+		component.set("v.emailnun", true);
+		component.set("v.emailwrite", false);
+	},
+
+	addemail: function(component, event, helper) {
+		console.log('add email call');
+		var email = component.get("v.emailid");
+	    console.log('email',email);
+		// Regular expression pattern to validate email format
+		var emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+	
+		// Check if the email is valid
+		if (emailPattern.test(email)) {
+			var recordId = element.buildertek__Vendor__c;
+			console.log('recordId',recordId);
+			// // Call the Apex method with the email ID and record ID as parameters
+			// var action = component.get("c.processEmail");
+			// action.setParams({
+			// 	emailId: email,
+			// 	recordId: recordId
+			// });
+	
+			// action.setCallback(this, function(response) {
+			// 	var state = response.getState();
+			// 	if (state === "SUCCESS") {
+			// 		// Handle the success response here
+			// 		// You can perform any additional actions or updates
+			// 		console.log("Email processed successfully");
+			// 	} else if (state === "ERROR") {
+			// 		// Handle the error response here
+			// 		var errors = response.getError();
+			// 		if (errors) {
+			// 			for (var i = 0; i < errors.length; i++) {
+			// 				console.error("Error: " + errors[i].message);
+			// 			}
+			// 		}
+			// 	}
+			// });
+	
+			// $A.enqueueAction(action);
+	
+			// Clear any previous error message, if any
+			component.set("v.errorMessage", "");
+		} else {
+			// Display an error message for invalid email
+			component.set("v.errorMessage", "Invalid email format");
+		}
+	},
+	
+
 
 })
