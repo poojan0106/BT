@@ -695,6 +695,34 @@
         }
     },
 
+
+    getChangeOrders : function(component, event, helper) {
+        component.set("v.Spinner", true);
+        var action = component.get("c.getChangeOrders");
+        action.setParams({
+            "projectId": component.get("v.projectId")
+        });
+        action.setCallback(this, function(response) {
+            var state = response.getState();
+            if (state === "SUCCESS") {
+                var changeOrder = response.getReturnValue();
+                console.log({changeOrder});
+                changeOrder = changeOrder.map(function(changeOrder){
+                    changeOrder.selected = false;
+                    changeOrder.buildertek__Budget__c = '';
+                    changeOrder.buildertek__Budget_Line__c = '';
+                    return changeOrder;
+                });
+                console.log('changeOrder => '+JSON.stringify(changeOrder));
+                component.set("v.changeOrder", changeOrder);
+                component.set("v.tableDataList", changeOrder);
+                component.set("v.Spinner", false);
+            }
+        });
+        $A.enqueueAction(action);
+    },
+
+
     getProjectData : function(component, event, helper) {
         var selectedTransactionType = component.get("v.selectedTransactionType");
         component.set("v.Spinner", true);
@@ -706,6 +734,8 @@
             helper.getPurchaseOrders(component);
         }else if(selectedTransactionType == 'Invoice(AP)'){
             helper.getInvoices(component);
+        }else if(selectedTransactionType == 'Change Order'){
+            helper.getChangeOrders(component);
         }else{
             component.set("v.Spinner", false);
             var toastEvent = $A.get("e.force:showToast");

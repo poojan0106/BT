@@ -16,6 +16,7 @@
     <aura:attribute name="selectedTransactionType" type="String" />
     <aura:attribute name="SelectNone" type="Boolean" default="true" />
     <aura:attribute name="SelectInv" type="Boolean" default="false" />
+    <aura:attribute name="SelectCO" type="Boolean" default="false" />
     <aura:attribute name="SelectPO" type="Boolean" default="false" />
     <aura:attribute name="SelectTC" type="Boolean" default="false" />
     <aura:attribute name="timeCards" type="List" />
@@ -25,6 +26,8 @@
     <aura:attribute name="selectedTimeCards" type="List" />
     <aura:attribute name="TimeCardP2" type="Boolean" default="false" />
     <aura:attribute name="invoices" type="List" />
+    <aura:attribute name="changeOrder" type="List" />
+
     <aura:attribute name="InvoiceP2" type="Boolean" default="false" />
     <aura:attribute name="selectedInvoices" type="List" />
     <aura:attribute name="purchaseOrders" type="List" />
@@ -338,6 +341,68 @@
                                     </aura:if>
                                 </table> 
                             </aura:if>
+
+                            <aura:if isTrue="{!v.SelectCO}">
+                                <br />
+                                <table class="slds-table slds-table_cell-buffer slds-table_bordered" aria-label="Example default base table of Opportunities">
+                                    <thead>
+                                        <tr class="slds-line-height_reset">
+                                            <th class="slds-text-align_right slds-cell_action-mode" scope="col" style="width:3.25rem;">
+                                                <lightning:input type="checkbox" name="checkAll" onchange="{!c.checkAll}" checked="{!v.checkedAll}" />
+                                            </th>
+                                            <th class="" scope="col">
+                                                <div class="slds-truncate" title="hange Order Name">Change Order Name</div>
+                                            </th>
+                                            <th class="" scope="col">
+                                                <div class="slds-truncate" title="Description">Description</div>
+                                            </th>
+                                            <th class="" scope="col">
+                                                <div class="slds-truncate" title="Total Cost">Total Cost</div>
+                                            </th>
+                                            <!-- <th class="" scope="col">
+                                                <div class="slds-truncate" title="Remaining Balance">Remaining Balance</div>
+                                            </th> -->
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <aura:iteration items="{!v.tableDataList}" var="tc">
+                                            <tr class="slds-hint-parent">
+                                                <td class="slds-text-align_right slds-cell_action-mode" role="gridcell">
+                                                    <div class="slds-checkbox">
+                                                    <lightning:input type="checkbox" name="input1" checked="{!tc.selected}" id="{!tc.Id}" onchange="{!c.checkboxChange}" />
+                                                    </div>
+                                                </td>
+                                                <td data-label="Name" scope="row">
+                                                    <div class="slds-truncate" title='{!tc.Name}'>
+                                                        {!tc.Name}
+                                                    </div>
+                                                </td>
+                                                <td data-label="Description">
+                                                    <div class="slds-truncate" title='{!tc.buildertek__Description__c}'>
+                                                        {!tc.buildertek__Description__c}
+                                                    </div>
+                                                </td>
+                                                <td data-label="Total Cost Code">
+                                                    <div class="slds-truncate" title='{!tc.buildertek__Total_Costs__c}'>
+                                                        {!tc.buildertek__Total_Costs__c}
+                                                    </div>
+                                                </td>
+                                                <!-- <td data-label="Daily Expense">
+                                                    <div class="slds-truncate" title='{!tc.buildertek__Net_Amount__c}'>
+                                                        <lightning:formattedNumber value="{!tc.buildertek__Net_Amount__c}" style="currency"/>
+                                                    </div>
+                                                </td> -->
+                                            </tr>
+                                        </aura:iteration>
+                                    </tbody>
+                                    <aura:if isTrue="{!empty(v.tableDataList)}">
+                                        <td colspan="5" style="text-align: center; line-height: 10rem; font-size: 18px; ">
+                                            No Data Found
+                                        </td>
+                                    </aura:if>
+                                </table> 
+                            </aura:if>
+
                     
                             <aura:if isTrue="{!v.SelectPO}">
                                 <br />
