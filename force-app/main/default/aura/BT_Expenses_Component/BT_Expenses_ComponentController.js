@@ -127,6 +127,8 @@
             helper.PurchaseOrdersPage2(component, event, helper);
         }else if(selectedTransactionType == 'Invoice(AP)'){
             helper.InvoicesPage2(component, event, helper);
+        }else if(selectedTransactionType == 'Change Order'){
+            helper.changeOrderPage2(component, event, helper);
         }else{
             var toastEvent = $A.get("e.force:showToast");
             toastEvent.setParams({
@@ -174,6 +176,8 @@
             helper.changeBudgetPurchaseOrders(component);
         }else if(selectedTransactionType == 'Invoice(AP)'){
             helper.changeBudgetInvoices(component);
+        }else if(selectedTransactionType == 'Change Order'){
+            helper.changeBudgetChangeOrder(component);
         }
     },
 
@@ -187,6 +191,8 @@
             helper.savePurchaseOrders(component);
         }else if(selectedTransactionType == 'Invoice(AP)'){
             helper.saveInvoices(component);
+        }else if(selectedTransactionType == 'Change Order'){
+            helper.saveChangeOrder(component);
         }
     },
 
@@ -202,6 +208,8 @@
             helper.PurchaseOrdersPage1(component, event, helper);
         }else if(selectedTransactionType == 'Invoice(AP)'){
             helper.InvoicesPage1(component, event, helper);
+        }else if(selectedTransactionType == 'Change Order'){
+            helper.changeOrderPage1(component, event, helper);
         }
     },
 
