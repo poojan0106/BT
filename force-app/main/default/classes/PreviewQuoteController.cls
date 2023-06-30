@@ -12,21 +12,26 @@ public without sharing class PreviewQuoteController{
     }
 
     @AuraEnabled
-    public static Contact getObjectContact(String recordId){
-        Contact con;
+    public static List<Contact> getObjectContact(String recordId){
+        List<Contact> con;
         buildertek__Quote__c qut;
-        if (Schema.sObjectType.buildertek__Quote__c.fields.Id.isAccessible() && Schema.sObjectType.buildertek__Quote__c.fields.buildertek__Primary_Contact__c.isAccessible()){
+        Set<Id> projectAccId= new Set<Id>();
+        
+        qut = [SELECT Id, Name, buildertek__Project__c , buildertek__Project__r.buildertek__Customer__c FROM buildertek__Quote__c WHERE Id = :recordId];
 
-            qut = [SELECT Id, buildertek__Primary_Contact__c
-                   FROM buildertek__Quote__c
-                   WHERE Id = :recordId];
+        System.debug('qut.buildertek__Project__c' + qut.buildertek__Project__c);
+        System.debug('qut.buildertek__Project__c' + qut.buildertek__Project__r.buildertek__Customer__c);
+
+        if (qut.buildertek__Project__c != null && qut.buildertek__Project__r.buildertek__Customer__c != null){
+            if(qut.buildertek__Project__r.buildertek__Customer__c != null){
+                projectAccId.add(qut.buildertek__Project__r.buildertek__Customer__c);
+            }
+            
         }
 
-
-        if (qut.buildertek__Primary_Contact__c != null){
-            con = [SELECT Id, Name, Email
-                   FROM Contact
-                   WHERE Id = :qut.buildertek__Primary_Contact__c];
+        System.debug('projectAccId' + projectAccId);
+        if(!projectAccId.isEmpty()){
+            con = [SELECT Id, Name, Email , buildertek__Primary_Contact__c, AccountId FROM Contact WHERE AccountId IN: projectAccId];
         }
         return con;
     }
@@ -61,7 +66,8 @@ public without sharing class PreviewQuoteController{
         email.setTemplateId(theTemplate.Id);
         email.setWhatId(recordId);
         email.setTargetObjectId(con.Id);
-        email.setSaveAsActivity(true);
+        // email.setSaveAsActivity(true);
+        email.setSaveAsActivity(false);
         email.setToAddresses(toaddres);
         msgList.add(email);
 
@@ -81,7 +87,8 @@ public without sharing class PreviewQuoteController{
             System.debug(theTemplate1);
             email1.setWhatId(recordId);
             email1.setTargetObjectId(con.Id);
-            email1.setSaveAsActivity(true);
+            // email1.setSaveAsActivity(true);
+            email1.setSaveAsActivity(false);
             email1.setToAddresses(toaddres);
             msgList1.add(email1);
             Messaging.SendEmailResult[] r1 = Messaging.sendEmail(new Messaging.SingleEmailMessage[]{email1});
@@ -172,16 +179,9 @@ public without sharing class PreviewQuoteController{
                    quoterecbody[0].buildertek__Template_Name__c	 = et[0].Name;
                 }
                 quoterecbody[0].buildertek__Memo__c = memovalue;
-                //List<String> values = to.split(',');
-               // string toemail = '';
+
                 string toemail = string.join(to,',');
-              /*  for(String value:to){
-                    if(toemail == ''){
-                            toemail = value;
-                    }else{
-                        toemail = toemail + ',' + value;
-                     }
-                } */
+
                 quoterecbody[0].buildertek__To_Emails__c = toemail;
                 update quoterecbody;
                 System.debug('Memo : '+quoterecbody[0].buildertek__Memo__c);
@@ -189,9 +189,6 @@ public without sharing class PreviewQuoteController{
 
             List<Contact> conList = [SELECT Id, email FROM Contact WHERE Id IN :to AND Email != null];
 
-            // contact conrec = [select id, Email
-            //                   from Contact
-            //                   limit 1];
             system.debug('random contact id '+conList[0]);
             List<Messaging.SingleEmailMessage> msgList = new List<Messaging.SingleEmailMessage>();
             List<Messaging.SingleEmailMessage> msgList1 = new List<Messaging.SingleEmailMessage>();
@@ -202,7 +199,8 @@ public without sharing class PreviewQuoteController{
                                         WHERE DeveloperName = 'QuoteTemplateBody'].Id;
             email.setTemplateId(theTemplatebodyid);
             email.setTargetObjectId(conList[0].Id);
-            email.setSaveAsActivity(true);
+            // email.setSaveAsActivity(true);
+            email.setSaveAsActivity(false);
             email.setWhatId(recordId);
             email.setToAddresses(new List<String>{'noreplay@buildertek.com'});
             msgList.add(email);
@@ -214,34 +212,10 @@ public without sharing class PreviewQuoteController{
                 system.debug(emailNew);
                 templateBody1 = emailNew.getHTMLBody();
             }
-          /*  Messaging.SingleEmailMessage email1 = new Messaging.SingleEmailMessage();
-            string theTemplate1 = [SELECT Id
-                                   FROM EmailTemplate
-                                   WHERE Name = 'BT Proposal Images'].Id;
-            email1.setTemplateId(theTemplate1);
-            email1.setWhatId(recordId);
-            email1.setTargetObjectId(conrec.Id);
-            email1.setSaveAsActivity(true);
-           // email1.setToAddresses(new List<String>{'noreplay@buildertek.com'});
-            msgList1.add(email1);
-            Messaging.SendEmailResult[] r1 = Messaging.sendEmail(new Messaging.SingleEmailMessage[]{email1});
-            System.debug('Email Results isSuccess = ' + r1[0].IsSuccess());
-            Database.rollback(sp);
-            for (Messaging.SingleEmailMessage emailNew1 : msgList1){
-                templateBody2 = emailNew1.getHTMLBody();
-            }
-            system.debug('templateBody 2 ----------> ' + templateBody2);
-            templateBody = templateBody1 + templateBody2;*/
 
             List<string> strTO = new List<string>();
             List<string> strCC = new List<string>();
             SET<Id> contactIdSet = new SET<Id>();
-            // List<Contact> conList = new List<Contact>();
-            // if (Schema.sObjectType.Contact.fields.Id.isAccessible() && Schema.sObjectType.Contact.fields.email.isAccessible()){
-            //     conList = [Select Id, email
-            //                from Contact
-            //                where Id IN :to and Email != null];
-            // }
             system.debug('conList -------> ' + conList);
             for (Contact con : conList){
                 strTO.add(con.email);
@@ -284,13 +258,7 @@ public without sharing class PreviewQuoteController{
             if (confirmationurl.size() > 0){
                 SiteUrl = confirmationurl[0].buildertek__SiteURL__c;
             }
-            // EmailTemplate tempbody = [SELECT Id,body,HTMLValue,Name,DeveloperName FROM EmailTemplate WHERE  DeveloperName = 'QuoteTemplateBody'];
-            // String quoteemailBody = tempbody.HTMLValue;
 
-            /* body += 'Hi, <br/><br/> ';
-             body += '</br> Please &nbsp;';
-             body += '<a href='+ SiteUrl +'buildertek__ConfirmationPage?Id='+recordId+'&templateId='+templateId+'>Click here</a>';
-             body += '&nbsp;to confirm your Quote Order details.' ; */
             mail.setReplyTo(fromAddress);
             if (wideOrgEmail.size() > 0) {
                 mail.setOrgWideEmailAddressId(wideOrgEmail[0].Id);
@@ -299,7 +267,8 @@ public without sharing class PreviewQuoteController{
             mail.setSubject(subject);
             mail.setHTMLBody(templateBody1);
             //mail.setTargetObjectId(conrec.Id);
-            mail.setSaveAsActivity(true);
+            mail.setSaveAsActivity(false);
+            // mail.setSaveAsActivity(true);
             mail.setWhatId(recordId);
 
             List<Messaging.Emailfileattachment> fileAttachments = new List<Messaging.Emailfileattachment>();
@@ -308,25 +277,13 @@ public without sharing class PreviewQuoteController{
             efa.setFileName(quoterecbody[0].Name+'.pdf');
             Blob b = setAttachmentBody(recordId, templateId, fileid);
             system.debug('Blob ---> ' + b);
-
-            // ContentVersion conVer = new ContentVersion();
-            // conVer.PathOnClient = 'Quote.pdf'; // The files name, extension is very important here which will help the file in preview.
-            // conVer.Title = quoterecbody[0].Name; // Display name of the files
-            // conVer.VersionData = b; // converting your binary string to Blog
-            // insert conVer;    //Insert ContentVersion
-
-            // ContentDocumentLink conDocLink = New ContentDocumentLink();
-            // conDocLink.LinkedEntityId = recordId; // Specify RECORD ID here i.e Any Object ID (Standard Object/Custom Object)
-            // conDocLink.ContentDocumentId = [SELECT ContentDocumentId FROM ContentVersion WHERE Id =:conVer.Id].ContentDocumentId;  //ContentDocumentId Id from ContentVersion
-            // conDocLink.Visibility = 'AllUsers';
-            // insert conDocLink;
-
             
             efa.setBody(b);
             fileAttachments.add(efa);
             mail.setFileAttachments(fileAttachments);
             mails.add(mail);
             Messaging.SendEmailResult[] results = Messaging.sendEmail(mails);
+
             String message = 'Success';
             if (results.size() > 0){
                 if (results[0].isSuccess()){
@@ -349,33 +306,61 @@ public without sharing class PreviewQuoteController{
                         j++;
 
                     }
+
+
+                    String anchorTagRegex = '<a href=\"(.*?)">(.*?)</a>';
+                    String plainText = templateBody1.replaceAll(anchorTagRegex, ' ');
+                    String plainText2 = plainText.stripHtmlTags();
+
+                    // Print the plain text.
+                    System.debug('Plain text: ' + plainText);
+
                     system.debug('CCaddresses ----------> ' + CCaddresses);
                     system.debug('Toaddresses ----------> ' + Toaddresses);
                     EmailMessage caseEmailMessage = new EmailMessage();
                     caseEmailMessage.fromAddress = UserInfo.getUserEmail();
                     caseEmailMessage.ToAddress = Toaddresses;
-                    caseEmailMessage.FromName = UserInfo.getUserName();
+                    caseEmailMessage.FromName = UserInfo.getName();
                     caseEmailMessage.CcAddress = CCaddresses;
                     caseEmailMessage.Subject = subject;
-                    caseEmailMessage.HtmlBody = body;
+                    caseEmailMessage.HtmlBody = templateBody1;
                     caseEmailMessage.Incoming = False;
+                    caseEmailMessage.RelatedToId = recordId;
                     caseEmailMessage.buildertek__Is_Incoming_Email__c = false;
                     caseEmailMessage.MessageDate = system.now();
-                    caseEmailMessage.TextBody = body.replaceAll('<br/>', '\n');
+                    caseEmailMessage.TextBody = plainText2;
                     system.debug('Content length ---------> ' + body.length());
-                    caseEmailMessage.status = '5';
+                    caseEmailMessage.status = '3';
                     caseEmailMessage.RelatedToId = recordId;
                     caseEmailMessage.buildertek__Subject__c = 'Re: ' + subject;
+                    System.debug('before caseEmailMessage:- '+caseEmailMessage);
 
                     insert caseEmailMessage;
 
-
+                    System.debug('caseEmailMessage:- '+caseEmailMessage);
+                    
+                    ContentVersion conVer = new ContentVersion();
+                    conVer.PathOnClient = 'Quote.pdf'; // The files name, extension is very important here which will help the file in preview.
+                    conVer.Title = quoterecbody[0].Name; // Display name of the files
+                    conVer.VersionData = b; // converting your binary string to Blog
+                    insert conVer;    //Insert ContentVersion
+                    
+                    ContentDocumentLink conDocLink = New ContentDocumentLink();
+                    conDocLink.LinkedEntityId = caseEmailMessage.Id; // Specify RECORD ID here i.e Any Object ID (Standard Object/Custom Object)
+                    conDocLink.ContentDocumentId = [SELECT ContentDocumentId FROM ContentVersion WHERE Id =:conVer.Id].ContentDocumentId;  //ContentDocumentId Id from ContentVersion
+                    conDocLink.Visibility = 'AllUsers';
+                    insert conDocLink;
+                    
+                    
                     EmailMessageRelation emr = new EmailMessageRelation();
                     emr.emailMessageId = caseEmailMessage.id;
                     emr.relationId = UserInfo.getUserId(); // user id / contact Id of the sender
                     emr.relationType = 'FromAddress';
                     emr.relationAddress = caseEmailMessage.fromAddress;
                     insert emr;
+                    
+                    System.debug('emrid+- '+ emr);
+                    System.debug('caseEmailMessage id :- '+emr.EmailMessageId);
 
                 }
             }
@@ -403,46 +388,12 @@ public without sharing class PreviewQuoteController{
         system.debug('updatedquoterec----------->'+quoterec);
 
             return message;
-       /* } catch (Exception exp){
-            system.debug('Error Message --------> ' + exp);
-            String message = exp.getMessage();
-            return message;
-        }*/
     }
 
     @AuraEnabled
     public static String acceptandsendProposal(string signName, String htmlBody, String recordId, String templateId, List<String> to, List<String> cc, string fileid, List<String> emailIds, string memovalue){
 
         try{
-            //String  conversionid ;
-            /* if(base64Data.length() > 1696 || Test.isRunningTest()){
-             base64Data = EncodingUtil.urlDecode(base64Data, 'UTF-8');
-             ContentVersion conVer = new ContentVersion();
-             conVer.ContentLocation = 'S'; // to use S specify this document is in Salesforce, to use E for external files
-             conVer.PathOnClient = 'SignatureName.png'; // The files name, extension is very important here which will help the file in preview.
-             conVer.Title = signName; // Display name of the files
-             conVer.VersionData = EncodingUtil.base64Decode(base64Data); // converting your binary string to Blog
-             insert conVer;    //Insert ContentVersion
-             system.debug('*******conVer*******'+conVer);
-            // First get the Content Document Id from ContentVersion Object
-             Id conDoc = [SELECT ContentDocumentId FROM ContentVersion WHERE Id =:conVer.Id].ContentDocumentId;
-            //create ContentDocumentLink  record
-             ContentDocumentLink conDocLink = New ContentDocumentLink();
-             conDocLink.LinkedEntityId = recId; // Specify RECORD ID here i.e Any Object ID (Standard Object/Custom Object)
-             conDocLink.ContentDocumentId = conDoc;  //ContentDocumentId Id from ContentVersion
-             conDocLink.Visibility = 'AllUsers';
-             conDocLink.shareType = 'V';
-             insert conDocLink;
-             system.debug('conDocLink---'+conDocLink.id);
-            // conversionid = [SELECT Id,VersionData,LatestPublishedVersionId FROM ContentVersion WHERE ContentDocumentId = :conDoc AND IsLatest = true].LatestPublishedVersionId;
-            // system.debug('conversn[0].Id ='+conversionid);
-
-             list<ContentDocumentLink>  files = [SELECT Id, ContentDocumentId, ContentDocument.LatestPublishedVersionId,
-             ContentDocument.LatestPublishedVersion.Title
-             FROM ContentDocumentLink WHERE LinkedEntityId = :recId and Id = :conDocLink.Id];
-             conversionid = '0681K00000atWCQQA2'; //files[0].ContentDocument.LatestPublishedVersionId;
-             system.debug('conversn[0].Id ='+conversionid);
-             }*/
             String body = '';
             String subject = '';
              list<buildertek__Admin_Interface_Node_Configuration__c> adminInterfaceNodeConfigurations = [Select Id,
@@ -607,6 +558,18 @@ public without sharing class PreviewQuoteController{
                     caseEmailMessage.buildertek__Subject__c = 'Re: ' + subject;
 
                     insert caseEmailMessage;
+
+                    ContentVersion conVer1 = new ContentVersion();
+                    conVer1.PathOnClient = 'Quote.pdf'; // The files name, extension is very important here which will help the file in preview.
+                    conver1.Title = 'Quote.pdf';
+                    conVer1.VersionData = b; // converting your binary string to Blog
+                    insert conVer1;    //Insert ContentVersion
+
+                    ContentDocumentLink conDocLink1 = New ContentDocumentLink();
+                    conDocLink1.LinkedEntityId = caseEmailMessage.Id; // Specify RECORD ID here i.e Any Object ID (Standard Object/Custom Object)
+                    conDocLink1.ContentDocumentId = [SELECT ContentDocumentId FROM ContentVersion WHERE Id =:conVer1.Id].ContentDocumentId;  //ContentDocumentId Id from ContentVersion
+                    conDocLink1.Visibility = 'AllUsers';
+                    insert conDocLink1;
 
 
                     EmailMessageRelation emr = new EmailMessageRelation();

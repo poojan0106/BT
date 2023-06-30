@@ -147,6 +147,8 @@ public class ProjectTaskTriggerHandler{
 
 	public void OnBeforeUpdate(Project_Task__c[] oldProjectTasks, Project_Task__c[] updatedProjectTasks, Map<ID, Project_Task__c> ProjectTaskMap, Map<Id, Project_Task__c> oldProjectTaskMap){
 		Set<Id> accountIds = new Set<Id>();
+		system.debug('updatedprojecttasks:- '+updatedProjectTasks);
+		system.debug('oldprojecttasks:- '+oldProjectTasks);
 		for (Project_Task__c updatedProjectTask : updatedProjectTasks){
 			accountIds.add(updatedProjectTask.buildertek__Contractor__c);
 		}
@@ -439,12 +441,12 @@ public class ProjectTaskTriggerHandler{
 		List<buildertek__Admin_Interface_Node_Configuration__c> adminInterfaceNodeConfigurations = [Select Id, buildertek__Do_not_Shift_Schedule_Dates_base_on_Pred__c
                                                                                               from buildertek__Admin_Interface_Node_Configuration__c
                                                                                               WHERE Name = :'Schedule Configuration' LIMIT 1];
-		
+
         Boolean donotShiftdatesofSchedules = false;
         if (adminInterfaceNodeConfigurations.size() > 0) {
             donotShiftdatesofSchedules = adminInterfaceNodeConfigurations[0].buildertek__Do_not_Shift_Schedule_Dates_base_on_Pred__c;
         }
-
+		
 		System.debug('donnotShiftdatesofSchedules:- ' + donotShiftdatesofSchedules);
 		if (donotshiftdatesofSchedules == false){
 

@@ -100,6 +100,8 @@
         var allSelectedIds = component.get("v.allSelectedIds");
         console.log({allSelectedIds});
         var rfqRecordList = component.get("v.rfqRecordList");
+        console.log({rfqRecordList});
+
 
         if (allSelectedIds.length == 0) {
             var currentSelectedIds = [];
@@ -132,6 +134,8 @@
             allSelectedIds = currentSelectedIds;
         }
         component.set("v.allSelectedIds", currentSelectedIds);
+        console.log('sakina test');
+        console.log({productFamilyValue});
 
         var action = component.get("c.getProducts");
         var tradetype = component.get("v.rfqtradeType");
@@ -155,6 +159,7 @@
 
             if (component.isValid() && state === "SUCCESS") {
                 var resultData = result.getReturnValue();
+                console.log({resultData});
                 var records = resultData.recordList;
                 if (allSelectedIds.length > 0) {
                     records.forEach(element => {
@@ -242,6 +247,8 @@
                 
                 component.set("v.Spinner", false);
                 console.log(response.getReturnValue());
+                console.log('TESTING');
+
 				component.set("v.listofproductfamily",response.getReturnValue());
                 if (component.get("v.listofproductfamily").length > 0) {
                     if(component.get("v.listofproductfamily").length == 1){

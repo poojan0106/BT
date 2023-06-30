@@ -646,6 +646,7 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
   droprow(e) {
     var taskIdList = this.scheduleItemIdsList;
     var taskList = this.scheduleItemsDataList;
+    console.log('takslist droprow:-'+taskList);
     var data = e.dataTransfer.getData("text");
     // Find the record ID by crawling up the DOM hierarchy
 
@@ -1714,6 +1715,7 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
           }
         }
       }
+      console.log('scheduleDataList after logic changed ',{scheduleDataList});
       this.scheduleItemsDataList = scheduleDataList;
       var formatedSchData = formatData(
         this.scheduleData,
@@ -1810,7 +1812,6 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
           ],
         },
       ];
-
       const project = new bryntum.gantt.ProjectModel({
         //enableProgressNotifications : true,
         calendar: data.project.calendar,
@@ -2007,6 +2008,7 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
                   );
                 }
               } else {
+                console.log('record.record.startDate ',record.record.startDate);
                 var sdate = new Date(record.record.startDate);
                 return (
                   months[sdate.getMonth()] +
@@ -2053,10 +2055,10 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
                   record.record._data.duration >= 1 &&
                   record.record._data.type == "Task" &&
                   record.record._data.name != "Milestone Complete"
-                ) {
-                  // console.log('In if conditon for enddate');
-                  var start;
-                  var endDate = new Date(record.value);
+                  ) {
+                    // console.log('In if conditon for enddate');
+                    var start;
+                    var endDate = new Date(record.value);
                   var start = new Date(record.record.startDate.getTime());
                   var duration = record.record.duration;
                   var eDate = new Date(start);
@@ -3102,12 +3104,14 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
             if (event.target.dataset.resource) {
               this.taskRecordId = event.record._data.id;
               this.showEditResourcePopup = true;
+              console.log('taskReocrdId:=- '+this.taskRecordId);
               this.selectedContactApiName = "buildertek__Resource__c";
               this.selectedResourceContact =
-                event.record._data.internalresource;
+              event.record._data.internalresource;
             }
           } else if (event.target.classList.contains("addinternalresource")) {
             this.taskRecordId = event.record._data.id;
+            console.log('taskReocrdId:=- '+this.taskRecordId);
             this.showEditResourcePopup = true;
             this.selectedContactApiName = "buildertek__Resource__c";
             this.selectedResourceContact = "";
@@ -3134,6 +3138,7 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
             if (event.target.dataset.resource) {
               this.taskRecordId = event.record._data.id;
               this.showEditResourcePopup = true;
+              console.log('taskReocrdId:=- '+this.taskRecordId);
               this.selectedContactApiName =
                 "buildertek__Contractor_Resource__c";
               this.selectedResourceContact =
@@ -3146,6 +3151,7 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
           } else if (event.target.classList.contains("addcontractorresource")) {
             this.taskRecordId = event.record._data.id;
             this.showEditResourcePopup = true;
+            console.log('taskReocrdId:=- '+this.taskRecordId);
             this.selectedContactApiName = "buildertek__Contractor_Resource__c";
             this.selectedResourceContact = "";
           }
@@ -3274,9 +3280,7 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
       }, 5000);
     }
   }
-  // saveWbsData(wbsValue){
-  //   console.log({wbsValue});
 
-  // }
+ 
 
 }
