@@ -43,7 +43,7 @@ public without sharing class PDFController {
     }
 
     @AuraEnabled
-    public static void createCase(String subject, String body) {
+    public static String createCase(String subject, String body) {
         Case newCase = new Case();
         newCase.Subject = subject;
         newCase.Description = body;
@@ -54,8 +54,10 @@ public without sharing class PDFController {
         try {
             insert newCase;
             System.debug('Case created successfully with ID: ' + newCase.Id);
+            return newCase.Id;
         } catch (Exception ex) {
             System.debug('Error creating case: ' + ex.getMessage());
+            return null;
         }
     }
 

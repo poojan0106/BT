@@ -7,9 +7,10 @@ import designcss from '@salesforce/resourceUrl/designcss';
 import sendemail from '@salesforce/apex/PDFController.sendemail';
 import createCase from '@salesforce/apex/PDFController.createCase';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import { NavigationMixin } from 'lightning/navigation';
 
 
-export default class Qf_guide2 extends LightningElement {
+export default class Qf_guide2 extends NavigationMixin(LightningElement) {
   @track spinnerdatatable = false;
   error_toast = true;
   pdfUrl;
@@ -132,17 +133,34 @@ export default class Qf_guide2 extends LightningElement {
       })
         .then(result => {
           if (result == 'success') {
-            createCase({ subject: this.subject, body: this.message });
+            createCase({ subject: this.subject, body: this.message })
+            .then(result => {
+              // Get the newly created record's Id
+              const recordId = result;
+              console.log('recordId',recordId);
+              // Navigate to the newly created record
+              this[NavigationMixin.Navigate]({
+                type: 'standard__recordPage',
+                attributes: {
+                    recordId: recordId,
+                    objectApiName: 'Case',
+                    actionName: 'view'
+                }
+            });
+            })
+            .catch(error => {
+              console.log('error',error);
+            });
             this.supportname = '';
             this.email = '';
             this.message = '';
             this.subject = '';
-            const event = new ShowToastEvent({
-              title: 'Success',
-              message: 'Action was successful!',
-              variant: 'success',
-            });
-            this.dispatchEvent(event);
+            // const event = new ShowToastEvent({
+            //   title: 'Success',
+            //   message: 'Action was successful!',
+            //   variant: 'success',
+            // });
+            // this.dispatchEvent(event);
 
 
           } else {
