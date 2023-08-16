@@ -339,8 +339,7 @@
                         if (toggleVal) {
                             if (result.tarTable != undefined && result.tarTable.ListOfEachRecord != undefined) {
                                 var records = result.tarTable.ListOfEachRecord;
-                                result.groupHierarchy = groupRecords(records);
-
+                                result.groupHierarchy = Object.values(groupRecords(records)).sort((a, b) => a.groupName.localeCompare(b.groupName));
                                 function groupRecords(data) {
                                     var listOfRecords = [];
                                     let recordsMap = new Map();
@@ -456,7 +455,8 @@
                                 if (toggleVal2) {
                                     if (result.tarTable != undefined && result.tarTable.ListOfEachRecord != undefined) {
                                         var records = result.tarTable.ListOfEachRecord;
-                                        result.groupHierarchy = groupRecords(records);
+                                        result.groupHierarchy = Object.values(groupRecords(records)).sort((a, b) => a.groupName.localeCompare(b.groupName));
+                                        console.log("Group Name By ASC" , result.groupHierarchy);
                                         // alert(JSON.stringify(records)); 
                                         function groupRecords(data) {
                                             var listOfRecords = [];
@@ -631,7 +631,7 @@
                                 if (toggleVal1) {
                                     if (result.tarTable != undefined && result.tarTable.ListOfEachRecord != undefined) {
                                         var records = result.tarTable.ListOfEachRecord;
-                                        result.groupHierarchy = groupRecords(records);
+                                        result.groupHierarchy = Object.values(groupRecords(records)).sort((a, b) => a.groupName.localeCompare(b.groupName));
                                         // alert(JSON.stringify(records)); 
                                         function groupRecords(data) {
                                             var listOfRecords = [];
@@ -1213,6 +1213,7 @@
     },
 
     fetchpricebooks: function (component, event, helper) {
+        console.log('FETCH Pricebook');
         var actions = component.get("c.getpricebooks");
         actions.setParams({
             recordId: component.get("v.recordId"),
@@ -1225,32 +1226,13 @@
                 let projectHavePricebook=result[0].defaultValue;
                 var pricebookOptions = [];
                 if(Object.keys(projectHavePricebook).length !=0){
-                    pricebookOptions.push({ key: projectHavePricebook.Name, value: projectHavePricebook.Id });
-                    result[0].priceWrapList.forEach(function(element){
-                        if(projectHavePricebook.Id !== element.Id){
-                            pricebookOptions.push({ key: element.Name, value: element.Id });
-                        }else{
-                            pricebookOptions.push({ key: "None", value: "" });
-
-                        }
-                    });
                     component.set('v.pricebookName' , projectHavePricebook.Id);
-
-                }else{
-                    pricebookOptions.push({ key: "None", value: "" });
-                    result[0].priceWrapList.forEach(function(element){
-                        pricebookOptions.push({ key: element.Name, value: element.Id });
-                    });
-                    component.set("v.pricebookName", pricebookOptions[0].value);                
-
                 }
-
-                if(component.get('v.pricebookName')!= undefined || component.get('v.pricebookName')!=null){
-                    helper.changeEventHelper(component, event, helper);
-                }
-
-
                 
+                pricebookOptions.push({ key: "None", value: "" });
+                result[0].priceWrapList.forEach(function(element){
+                    pricebookOptions.push({ key: element.Name, value: element.Id });
+                });  
                 component.set("v.pricebookoptions", pricebookOptions);
             }
         });
@@ -2222,6 +2204,83 @@
         });
         $A.enqueueAction(action);
     },
+
+    //  ************ For Add Sales Invoice Button *************
+    getsalesInvoiceHelper: function (component, event, helper) {
+        $A.get("e.c:BT_SpinnerEvent").setParams({
+            "action": "SHOW"
+        }).fire();
+        var budgetId = component.get('v.recordId');
+        console.log('Budget record in => ', component.get('v.recordId'));
+
+        var action = component.get("c.getSalesInvoice");
+        action.setParams({
+            "budgetId" : budgetId
+        });
+        action.setCallback(this, function(response) {
+            if (response.getState() === "SUCCESS") {
+                $A.get("e.c:BT_SpinnerEvent").setParams({
+                    "action": "HIDE"
+                }).fire();
+                component.set('v.salesInvoices', response.getReturnValue());
+                component.set("v.addSalesInvoiceSection", true);
+                console.log('SalesInvoice List => ',response.getReturnValue());
+            }
+            else if(response.getState() === "ERROR"){
+                $A.get("e.c:BT_SpinnerEvent").setParams({
+                    "action": "HIDE"
+                }).fire();
+                console.log('Error => ',response.getError());
+            }
+        });
+        $A.enqueueAction(action);
+    },
+
+    AddNewSalesInvoicesHelper: function(component, event, SLlist){
+        $A.get("e.c:BT_SpinnerEvent").setParams({
+            "action": "SHOW"
+        }).fire();
+        console.log('into update');
+        var BudgetId = component.get('v.recordId');
+        var action = component.get("c.UpdateSalesInvoices");
+        action.setParams({
+            'SLIDlist': SLlist,
+            'BudgetId': BudgetId
+        })
+        action.setCallback(this, function (response) {
+            if (response.getState() == 'SUCCESS') {
+                $A.get("e.c:BT_SpinnerEvent").setParams({
+                    "action": "HIDE"
+                }).fire();
+                console.log('Response =: ', response.getReturnValue());
+                // if(response.getReturnValue() ==  'success'){
+                var toastEvent = $A.get("e.force:showToast");
+                toastEvent.setParams({
+                    type: 'SUCCESS',
+                    message: 'Sales Invoice added Successfully',
+                    duration: '5000',
+                });
+                toastEvent.fire();
+                component.set("v.addSalesInvoiceSection", false); // to close popup
+                component.set("v.selectedSalesInvoices", []); // to clear selected sales invoics
+                component.set('v.allSLChecked', false); // for check-all checkbox
+                $A.get("e.force:refreshView").fire();
+                document.location.reload(true);    
+                // window.location.reload();
+
+
+
+            }
+            else if (response.getState() == 'Error') {
+                $A.get("e.c:BT_SpinnerEvent").setParams({
+                    "action": "HIDE"
+                }).fire();
+                console.log('Error to Add Sales Invoice => ', response.getError());
+            }
+        });
+        $A.enqueueAction(action);
+    },
+
     handleSelectAll: function(component, event, helper) {
         console.log(event.target.name);
         console.log(event.target.checked);
@@ -2325,5 +2384,102 @@
         // enqueue the Action  
         $A.enqueueAction(action);
     },
+    
+    applyCSSBasedOnURL: function(component) {
+        var isBudget = component.get("v.isbudget");
+        console.log('isBudget',isBudget);
+        var headerDiv = component.find("headerDiv");
+        console.log('headerDiv',headerDiv);
+        
+        // Check if the current URL contains a specific keyword or phrase
+        if (isBudget) {
+            console.log('in if');
+            $A.util.addClass(headerDiv, "divconts");
+        } else {
+            console.log('in else');
+            $A.util.removeClass(headerDiv, "divconts");
+        }
+    },
+    addInvoicePOHelper:function (component, event, helper) {
+
+        component.set('v.addInvoicePOSection' , true);
+
+        var action = component.get("c.getInvoicePOData");
+        action.setParams({
+            "RecId": component.get("v.recordId")
+        });
+        action.setCallback(this, function (response) {
+            var state= response.getState();
+            var error= response.getError();
+            console.log(state);
+            console.log(error);
+
+            if(state === 'SUCCESS'){
+                console.log(response.getReturnValue());
+                var result=response.getReturnValue();
+                component.set('v.invoicePORecordList', result);
+            }
+
+            $A.get("e.c:BT_SpinnerEvent").setParams({
+                "action": "HIDE"
+            }).fire();
+
+        });
+        $A.enqueueAction(action);
+    },
+
+    // >>>>>>>>>>>>>> CHB - 79 <<<<<<<<<<<<<<<<<<<
+    Check_Create_User_Access: function(component, event, helper){
+        var action1 = component.get("c.CheckUserAccess");
+        action1.setParams({
+            AccessType: 'Create'
+        });
+        action1.setCallback(this, function(response) {
+            console.log('CheckUserHaveAcces >> ',response.getReturnValue());
+            if(response.getReturnValue() == 'True'){
+               component.set("v.HaveCreateAccess", true);
+            }
+            else if(response.getReturnValue() == 'False'){
+                component.set("v.HaveCreateAccess", false);
+            }
+        });
+        $A.enqueueAction(action1);
+    },
+
+    Check_Update_User_Access: function(component, event, helper){
+        var action1 = component.get("c.CheckUserAccess");
+        action1.setParams({
+            AccessType: 'Update'
+        });
+        action1.setCallback(this, function(response) {
+            console.log('CheckUserHaveAcces >> ',response.getReturnValue());
+            if(response.getReturnValue() == 'True'){
+               component.set("v.HaveUpdateAccess", true);
+            }
+            else if(response.getReturnValue() == 'False'){
+                component.set("v.HaveUpdateAccess", false);
+            }
+        });
+        $A.enqueueAction(action1);
+    },
+
+    Check_Delete_User_Access: function(component, event, helper){
+        var action1 = component.get("c.CheckUserAccess");
+        action1.setParams({
+            AccessType: 'Delete'
+        });
+        action1.setCallback(this, function(response) {
+            console.log('CheckUserHaveAcces >> ',response.getReturnValue());
+            if(response.getReturnValue() == 'True'){
+               component.set("v.HaveDeleteAccess", true);
+            }
+            else if(response.getReturnValue() == 'False'){
+                component.set("v.HaveDeleteAccess", false);
+            }
+        });
+        $A.enqueueAction(action1);
+    },
+
+    
     
 })

@@ -1,4 +1,5 @@
 ({
+
     getcurr: function(component, event, helper) {
         var action = component.get("c.getRfqTo");
         action.setCallback(this, function(response) {
@@ -868,6 +869,10 @@
                     component.set("v.newQuote.buildertek__Grouping__c", res[0].Product2.buildertek__Quote_Group__c);
                     component.set("v.newQuote.buildertek__Grouping__r.Name", res[0].Product2.buildertek__Quote_Group__r.Name);
                 }
+                if(res[0].Product2.QuantityUnitOfMeasure != undefined && res[0].Product2.QuantityUnitOfMeasure != null){
+                    console.log("Inside UOM-->", res[0].Product2.QuantityUnitOfMeasure )
+                    component.set("v.newQuote.buildertek__UOM__c", res[0].Product2.QuantityUnitOfMeasure);
+                }
             }
         });
         $A.enqueueAction(action);
@@ -894,6 +899,7 @@
                 }
                 if (existuom == true) {
                     component.set("v.UOMvalues", res);
+                    console.log("Quote 23",res);
                 } else {
                     component.set("v.UOMvalues", 'Each');
                 }
@@ -1518,6 +1524,80 @@
         }
 
      },
+     applyCSSBasedOnURL: function(component) {
+        var isproject = component.get("v.isproject");
+        console.log('isproject',isproject);
+        var headerDiv = component.find("headerDiv");
+        console.log('headerDiv',headerDiv);
+        var totalPage = component.get("v.total");
+        console.log('totalPage',totalPage);
+
+        // Check if the current URL contains a specific keyword or phrase
+        if (isproject) {
+            console.log('in if');
+            $A.util.addClass(headerDiv, "divcont1");
+        } else if(!isproject){
+            console.log('in else');
+            $A.util.removeClass(headerDiv, "divcont1");
+
+            // if(totalPage < 50){
+            //     $A.util.addClass(headerDiv, "divcont2");
+            // } else {
+            //     $A.util.removeClass(headerDiv, "divcont2");
+            // }
+        }
+    },
+// >>>>>>>>>>>>>> CHB - 78, 80 <<<<<<<<<<<<<<<<<<<
+    Check_Create_User_Access: function(component, event, helper){
+        var action1 = component.get("c.CheckUserAccess");
+        action1.setParams({
+            AccessType: 'Create'
+        });
+        action1.setCallback(this, function(response) {
+            console.log('CheckUserHaveAcces >> ',response.getReturnValue());
+            if(response.getReturnValue() == 'True'){
+               component.set("v.HaveCreateAccess", true);
+            }
+            else if(response.getReturnValue() == 'False'){
+                component.set("v.HaveCreateAccess", false);
+            }
+        });
+        $A.enqueueAction(action1);
+    },
+
+    Check_Update_User_Access: function(component, event, helper){
+        var action1 = component.get("c.CheckUserAccess");
+        action1.setParams({
+            AccessType: 'Update'
+        });
+        action1.setCallback(this, function(response) {
+            console.log('CheckUserHaveAcces >> ',response.getReturnValue());
+            if(response.getReturnValue() == 'True'){
+               component.set("v.HaveUpdateAccess", true);
+            }
+            else if(response.getReturnValue() == 'False'){
+                component.set("v.HaveUpdateAccess", false);
+            }
+        });
+        $A.enqueueAction(action1);
+    },
+
+    Check_Delete_User_Access: function(component, event, helper){
+        var action1 = component.get("c.CheckUserAccess");
+        action1.setParams({
+            AccessType: 'Delete'
+        });
+        action1.setCallback(this, function(response) {
+            console.log('CheckUserHaveAcces >> ',response.getReturnValue());
+            if(response.getReturnValue() == 'True'){
+               component.set("v.HaveDeleteAccess", true);
+            }
+            else if(response.getReturnValue() == 'False'){
+                component.set("v.HaveDeleteAccess", false);
+            }
+        });
+        $A.enqueueAction(action1);
+    },
 
 
 })

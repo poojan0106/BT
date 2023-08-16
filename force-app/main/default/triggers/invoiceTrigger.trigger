@@ -21,6 +21,11 @@ trigger invoiceTrigger on Billings__c (before insert, before update, before dele
                 BillingRecordList.add(BillingRec);
             }
             handler.OnBeforeInsert(Trigger.new);
+
+            if(Trigger.isUpdate){
+            // handler.DeleteBudgetLine(Trigger.old ,Trigger.new , Trigger.oldMap , Trigger.newMap);
+                handler.onBeforeUpdate(Trigger.old ,Trigger.new , Trigger.oldMap , Trigger.newMap);
+            }
         } 
         else if(Trigger.isDelete){
             system.debug('before Delete');
@@ -35,13 +40,14 @@ trigger invoiceTrigger on Billings__c (before insert, before update, before dele
                     Inv.adderror('You cannot delete this Sales Invoice because it is related to a Finance Transaction record. Please delete the Finance Transaction record first then try again.');    
                 }
             }
-
         }
     } else if (Trigger.isAfter) {
         if (Trigger.isInsert) {
             handler.OnAfterInsert(Trigger.new, Trigger.newMap); 
         } else if(Trigger.isUpdate){
             handler.OnAfterUpdate(Trigger.old, Trigger.new, Trigger.newMap, Trigger.oldMap); 
+            handler.DeleteBudgetLine(Trigger.old ,Trigger.new , Trigger.oldMap , Trigger.newMap);
+
         } 
     }
     

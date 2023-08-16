@@ -321,6 +321,7 @@ public without sharing class PurchaseOrderDAO{
      Throws [Exceptions]:
      **********************************************************************************************************************/
     public static string createAP(List<Purchase_Order__c> pos){
+        system.debug('Inside createAP');
         Map<Id, Account_Payable__c> PoIdbyAp = new Map<Id, Account_Payable__c>();
         Id posRecId;
         for (Purchase_Order__c po : pos){
@@ -333,9 +334,13 @@ public without sharing class PurchaseOrderDAO{
             Account_Payable__c ap = new Account_Payable__c();
             //ap.Name = po.Name;
             ap.Purchase_Order__c = po.id;
+            System.debug('purchase order iD => ' + ap.Purchase_Order__c);
             ap.Project__c = po.Project__c;
             ap.Vendor__c = po.Vendor__c;
-            ap.Tax__c = po.Tax__c;
+
+            if(po.Tax__c != null){
+                ap.Tax__c = po.Tax__c;
+            }
             ap.buildertek__Description__c = po.buildertek__Description__c;
             PoIdbyAp.put(po.id, ap);
             posRecId = po.id;
@@ -346,6 +351,7 @@ public without sharing class PurchaseOrderDAO{
     }
 
     public static void createAPItems(List<Purchase_Order_Item__c> poItems){
+        system.debug('In createAPItems');
         Map<Id, Account_Payable__c> PoIdbyAp = new Map<Id, Account_Payable__c>();
 
         set<Id> poIds = new set<Id>();
@@ -372,8 +378,12 @@ public without sharing class PurchaseOrderDAO{
             apItem.Product__c = poItem.Product__c;
             apItem.Purchase_Order_Item__c = poItem.Id;
             apItem.Quantity__c = poItem.Quantity__c;
-            apItem.Unit_Price__c = poItem.Unit_Price__c;
-            apItem.Tax__c = poItem.Tax__c;
+            if(poItem.Unit_Price__c != null){
+                apItem.Unit_Price__c = poItem.Unit_Price__c;
+            }
+            if(poItem.Tax__c != null){
+                apItem.Tax__c = poItem.Tax__c;
+            }
             apItems.add(apItem);
         }
         /* if(Schema.sObjectType.buildertek__Account_Payable_Item__c.fields.Id.isCreateable() &&

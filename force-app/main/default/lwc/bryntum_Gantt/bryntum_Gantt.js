@@ -8,7 +8,6 @@ import { loadScript, loadStyle } from "lightning/platformResourceLoader";
 import GanttStyle from "@salesforce/resourceUrl/BT_Bryntum_NewGanttCss";
 //import GANTT from "@salesforce/resourceUrl/bryntum_gantt";
 import GANTTModule from "@salesforce/resourceUrl/BT_Bryntum_NewGantt_ModuleJS";
-// import GANTTModule from "@salesforce/resourceUrl/BT_Bryntum_NewGantt_ModuleJS_2";
 //import  SchedulerPro  from "@salesforce/resourceUrl/bryntumScheduleProModuleJS";
 import GanttToolbarMixin from "./lib/GanttToolbar";
 import GanttToolbarMixinDup from "./lib/GanttToolbarDup";
@@ -30,9 +29,6 @@ import saveResourceForRecord from "@salesforce/apex/BT_NewGanttChartCls.saveReso
 import updateHideGanttOnSch from "@salesforce/apex/BT_NewGanttChartCls.updateHideGanttOnSch";
 import changeOriginalDates from "@salesforce/apex/BT_NewGanttChartCls.changeOriginalDates";
 
-import setWBSValue from "@salesforce/apex/BT_NewGanttChartCls.setWBSValue";
-
-import AdminSettings from "@salesforce/apex/BT_NewGanttChartCls.getColumnSettings";
 import PARSER from "@salesforce/resourceUrl/PapaParse";
 
 import { formatData, saveeditRecordMethod } from "./bryntum_GanttHelper";
@@ -41,10 +37,6 @@ import getRecordType from "@salesforce/apex/BT_NewGanttChartCls.getRecordType";
 import { getPicklistValues, getObjectInfo } from "lightning/uiObjectInfoApi";
 
 export default class Gantt_component extends NavigationMixin(LightningElement) {
-
-  @track wpsValue = {};
-  @track wpsBoolean = false;
-
   @api showpopup = false;
   @api holidays = [];
   @api monthsval = [];
@@ -57,10 +49,9 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
   @api taskRecordId;
   @api objApiName = "buildertek__Project_Task__c";
   @track scheduleItemsData;
-
+  @api mapOfWBSValue = [];
   //VARIABLE ADDED TO GET PHASE DATES - 09/10
   @api phaseDates = [];
-  @api mapOfWBSValue;
 
   @api scheduleItemsDataList;
   @api storeRes;
@@ -183,7 +174,6 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
   @track fileName = "gantt-chart";
 
   @wire(getRecordType) objRecordType;
-
 
   @wire(pickListValueDynamically, {
     customObjInfo: {
@@ -504,15 +494,12 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
             var newTaskeDate = response; //.toLocaleDateString().split('/');
             thatThis.newTaskRecordCreate["buildertek__Finish__c"] = response; // newTaskeDate[2]+'-'+newTaskeDate[1]+'-'+newTaskeDate[0];
             if (thatThis.template.querySelectorAll("lightning-input")) {
-              try {
-                if (
-                  thatThis.template.querySelectorAll("lightning-input")[3].label == "End Date"
-                ) {
-                  thatThis.template.querySelectorAll("lightning-input")[3].value =
-                    thatThis.newTaskRecordCreate["buildertek__Finish__c"];
-                }
-              } catch (error) {
-                console.log('log one error:- '+error);
+              if (
+                thatThis.template.querySelectorAll("lightning-input")[3]
+                  .label == "End Date"
+              ) {
+                thatThis.template.querySelectorAll("lightning-input")[3].value =
+                  thatThis.newTaskRecordCreate["buildertek__Finish__c"];
               }
             }
           });
@@ -550,9 +537,9 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
             var newTaskeDate = response; //.toLocaleDateString().split('/');
             thatThis.newTaskRecordCreate["buildertek__Finish__c"] =
               newTaskeDate; // newTaskeDate[2]+'-'+newTaskeDate[1]+'-'+newTaskeDate[0];
-              console.log('log 2.');
             if (
-              thatThis.template.querySelectorAll("lightning-input")[3].label == "End Date"
+              thatThis.template.querySelectorAll("lightning-input")[3].label ==
+              "End Date"
             ) {
               thatThis.template.querySelectorAll("lightning-input")[3].value =
                 thatThis.newTaskRecordCreate["buildertek__Finish__c"];
@@ -646,7 +633,6 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
   droprow(e) {
     var taskIdList = this.scheduleItemIdsList;
     var taskList = this.scheduleItemsDataList;
-    console.log('takslist droprow:-'+taskList);
     var data = e.dataTransfer.getData("text");
     // Find the record ID by crawling up the DOM hierarchy
 
@@ -1103,6 +1089,10 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
       scheduleid: this.recordId,
     })
       .then((response) => {
+        console.log("get schedule item records.");
+        console.log({
+          response,
+        });
         this.formatCustomResponse(response);
       })
       .catch((error) => {
@@ -1224,7 +1214,6 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
     }
   }
   inputChange(event) {
-    console.log('log 3.');
     if (event.currentTarget.label == "Name") {
       this.newTaskPopupName = event.currentTarget.value;
     } else if (event.currentTarget.label == "Lag") {
@@ -1317,42 +1306,37 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
       endDate: new Date(2023, 3, 8), // March 9th
       isWorking: false,
     };
-
     console.log("Connected Callback");
   }
 
   renderedCallback() {
+    if (this.bryntumInitialized) {
+      return;
+    }
+    this.bryntumInitialized = true;
 
-    let intervalID = setInterval(() => {
-
-      if (this.bryntumInitialized) {
-        return;
-      }
-      this.bryntumInitialized = true;
-
-      Promise.all([
-        loadScript(this, GANTTModule), //GanttDup ,SchedulerPro GANTTModule,GANTT + "/gantt.lwc.module.js"
-        //loadStyle(this,  GANTT + "/gantt.stockholm.css")
-        //loadStyle(this,  GANTT + "/gantt.stockholm.css")
-        loadStyle(this, GanttStyle + "/gantt.stockholm.css"),
-        // loadScript(this, Papa.unparse()), // papaparse lib..
-        loadScript(this, PARSER + "/PapaParse/papaparse.js"),
-      ])
-        .then(() => {
-          console.log("*******LIBRARY LOADED SUCCESSFULLY******");
-          this.gettaskrecords();
-          this.loadedChart = true;
-        })
-        .catch((error) => {
-          this.dispatchEvent(
-            new ShowToastEvent({
-              title: "Error loading Gantt Chart",
-              message: error,
-              variant: "error",
-            })
-          );
-        });
-      }, 1000);
+    Promise.all([
+      loadScript(this, GANTTModule), //GanttDup ,SchedulerPro GANTTModule,GANTT + "/gantt.lwc.module.js"
+      //loadStyle(this,  GANTT + "/gantt.stockholm.css")
+      //loadStyle(this,  GANTT + "/gantt.stockholm.css")
+      loadStyle(this, GanttStyle + "/gantt.stockholm.css"),
+      // loadScript(this, Papa.unparse()), // papaparse lib..
+      loadScript(this, PARSER + "/PapaParse/papaparse.js"),
+    ])
+      .then(() => {
+        console.log("*******LIBRARY LOADED SUCCESSFULLY******");
+        this.gettaskrecords();
+        this.loadedChart = true;
+      })
+      .catch((error) => {
+        this.dispatchEvent(
+          new ShowToastEvent({
+            title: "Error loading Gantt Chart",
+            message: error,
+            variant: "error",
+          })
+        );
+      });
   }
 
   //   disconnectedCallback() {
@@ -1656,14 +1640,6 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
       console.log("createGantt");
       console.log(this.GanttVar);
       var GanttToolbar;
-      var wbsObj={};
-
-      try {
-        console.log('bryntum ==> ',JSON.parse(JSON.stringify(bryntum)));
-      } catch (error) {
-        console.log('error on JSON ',error);
-      }
-
 
       var loc = window.location.href;
       var domName = loc.split(".lightning.force.com")[0].split("https://")[1];
@@ -1715,8 +1691,8 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
           }
         }
       }
-      console.log('scheduleDataList after logic changed ',{scheduleDataList});
       this.scheduleItemsDataList = scheduleDataList;
+
       var formatedSchData = formatData(
         this.scheduleData,
         this.scheduleItemsData,
@@ -1812,6 +1788,7 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
           ],
         },
       ];
+
       const project = new bryntum.gantt.ProjectModel({
         //enableProgressNotifications : true,
         calendar: data.project.calendar,
@@ -1837,7 +1814,7 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
         tbar: new GanttToolbar(),
         rowHeight: 30,
         barMargin: 5,
-        minHeight: "80em",
+        // minHeight: "80em",
         viewPreset: "weekAndDayLetter",
         dependencyIdField: "sequenceNumber",
         // dependencyIdField: "wbsCode",
@@ -2008,7 +1985,6 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
                   );
                 }
               } else {
-                console.log('record.record.startDate ',record.record.startDate);
                 var sdate = new Date(record.record.startDate);
                 return (
                   months[sdate.getMonth()] +
@@ -2055,10 +2031,10 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
                   record.record._data.duration >= 1 &&
                   record.record._data.type == "Task" &&
                   record.record._data.name != "Milestone Complete"
-                  ) {
-                    // console.log('In if conditon for enddate');
-                    var start;
-                    var endDate = new Date(record.value);
+                ) {
+                  // console.log('In if conditon for enddate');
+                  var start;
+                  var endDate = new Date(record.value);
                   var start = new Date(record.record.startDate.getTime());
                   var duration = record.record.duration;
                   var eDate = new Date(start);
@@ -2983,56 +2959,8 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
                             }
                         }
                     }*/
-
-        wbsObj[renderData.taskRecord.wbsValue._value]=renderData.taskRecord.id.split('_')[0];
-        // wbsObj[renderData.taskRecord.id.split('_')[0]]=renderData.taskRecord.wbsValue._value;
-
-        var that = this;
-        that.wpsValue = wbsObj;
-
-          if (that.wpsBoolean == undefined || that.wpsBoolean == null) {
-            that.wpsBoolean = false;
-          }
-
-          try {
-            var that = this;
-            if (that.wpsBoolean == false) {
-              that.wpsValue = wbsObj;
-              that.wpsBoolean = true;
-
-              console.log('*** 1');
-              setTimeout(() => {
-                setWBSValue({
-                  scheduleItemMap: JSON.stringify(wbsObj),
-                })
-                  .then(function (response) {
-                    console.log('successfilly called setWBSValue');
-                    // console.log(response);
-                  })
-                  .catch(function (error) {
-                    console.log('Error from apex call in setWBSValue');
-                  });
-
-
-              },5000);
-
-                console.log('*** 2');
-
-            }
-          } catch (error) {
-            console.log('Error in custom WBS logic');
-            console.log({error});
-            console.log(JSON.stringify(error));
-          }
-          // const timeoutMilliseconds = 5000;
-
         },
-
       });
-
-      // console.log(gantt.taskRenderer({x , y}));
-      console.log('*** N3');
-      // console.log(taskRenderer({x , y}));
 
       if (this.GanttVar) {
         this.hideSchedule = this.GanttVar.subGrids.normal.collapsed;
@@ -3104,14 +3032,12 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
             if (event.target.dataset.resource) {
               this.taskRecordId = event.record._data.id;
               this.showEditResourcePopup = true;
-              console.log('taskReocrdId:=- '+this.taskRecordId);
               this.selectedContactApiName = "buildertek__Resource__c";
               this.selectedResourceContact =
-              event.record._data.internalresource;
+                event.record._data.internalresource;
             }
           } else if (event.target.classList.contains("addinternalresource")) {
             this.taskRecordId = event.record._data.id;
-            console.log('taskReocrdId:=- '+this.taskRecordId);
             this.showEditResourcePopup = true;
             this.selectedContactApiName = "buildertek__Resource__c";
             this.selectedResourceContact = "";
@@ -3138,7 +3064,6 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
             if (event.target.dataset.resource) {
               this.taskRecordId = event.record._data.id;
               this.showEditResourcePopup = true;
-              console.log('taskReocrdId:=- '+this.taskRecordId);
               this.selectedContactApiName =
                 "buildertek__Contractor_Resource__c";
               this.selectedResourceContact =
@@ -3151,7 +3076,6 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
           } else if (event.target.classList.contains("addcontractorresource")) {
             this.taskRecordId = event.record._data.id;
             this.showEditResourcePopup = true;
-            console.log('taskReocrdId:=- '+this.taskRecordId);
             this.selectedContactApiName = "buildertek__Contractor_Resource__c";
             this.selectedResourceContact = "";
           }
@@ -3280,7 +3204,4 @@ export default class Gantt_component extends NavigationMixin(LightningElement) {
       }, 5000);
     }
   }
-
- 
-
 }

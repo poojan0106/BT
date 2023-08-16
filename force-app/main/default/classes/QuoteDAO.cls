@@ -468,60 +468,52 @@ public with sharing class QuoteDAO{
     /** Developer Name : Sachin Dond
      Date : 24/7/2018
      **/
-    @AuraEnabled
-    public static List<sObject> getProductRecords(String searchKeyWord, String ObjectName, String filter, string parentId, string prodctfamly){
-        system.debug('ObjectName-->' + ObjectName);
-        String searchKey = '%'+ searchKeyWord + '%';
-        List<sObject> returnList = new List<sObject>();
-        // Create a Dynamic SOQL Query For Fetch Record List with LIMIT 5
-        String sQuery;
+    // @AuraEnabled
+    // public static List<sObject> getProductRecords(String searchKeyWord, String ObjectName, String filter, string parentId, string prodctfamly){
+    //     system.debug('ObjectName-->' + ObjectName);
+    //     String searchKey = '%'+ searchKeyWord + '%';
+    //     List<sObject> returnList = new List<sObject>();
+    //     String sQuery;
 
-        if (ObjectName == 'Product2' && parentId != null){
-            list<string> ProdIds = new list<string>();
-            list<pricebookEntry> PElist;
-            system.debug('prodctfamly---->' + prodctfamly);
-            if (prodctfamly != null){
-                PElist = [select id, Product2Id, product2.family
-                          from pricebookEntry
-                          where pricebook2Id = :parentId AND toLabel(product2.family) = :prodctfamly];
-            } else{
-                PElist = [select id, Product2Id, product2.family
-                          from pricebookEntry
-                          where pricebook2Id = :parentId];
-            }
-            System.debug('PElist'+ PElist);
-            for (pricebookEntry PE : PElist){
-                ProdIds.add(PE.Product2Id);
-            }
-            if (filter != null){
-                filter = filter + ' AND Id IN: ProdIds';
-            } else{
-                filter = 'Id IN: ProdIds';
-            }
-        }
-        if (filter != null){
-            sQuery = 'select id, Name from ' + ObjectName + ' where Name LIKE: searchKey AND ' + filter + ' order by Name ASC limit 5';
-        } else{
-            System.debug('Inisde 2nd one');
-            sQuery = 'select id, Name from ' + ObjectName + ' where Name LIKE: searchKey order by Name ASC limit 5';
-        }
-        system.debug('searchKey --------> ' + searchKey);
-        system.debug('sQuery --------> ' + sQuery);
-        List<sObject> lstOfRecords;
-        /*if(ObjectName == 'Product2'){
-         if(Schema.sObjectType.Product2.fields.Id.isAccessible() &&
-         Schema.sObjectType.Product2.fields.Name.isAccessible() ){
-
-         lstOfRecords = Database.query(String.escapeSingleQuotes(sQuery));
-         }
-         }else{*/
-        lstOfRecords = Database.query(sQuery);
-        /*}*/
-        for (sObject obj : lstOfRecords){
-            returnList.add(obj);
-        }
-        return returnList;
-    }
+    //     if (ObjectName == 'Product2' && parentId != null){
+    //         list<string> ProdIds = new list<string>();
+    //         list<pricebookEntry> PElist;
+    //         system.debug('prodctfamly---->' + prodctfamly);
+    //         if (prodctfamly != '--None--'){
+    //             PElist = [select id, Product2Id, product2.family
+    //                       from pricebookEntry
+    //                       where pricebook2Id = :parentId AND toLabel(product2.family) = :prodctfamly];
+    //         } else{
+    //             PElist = [select id, Product2Id, product2.family
+    //                       from pricebookEntry
+    //                       where pricebook2Id = :parentId AND toLabel(product2.family) = :null];
+    //         }
+    //         System.debug('PElist'+ PElist);
+    //         for (pricebookEntry PE : PElist){
+    //             ProdIds.add(PE.Product2Id);
+    //         }
+    //         if (filter != null){
+    //             filter = filter + ' AND Id IN: ProdIds';
+    //         }
+    //          else{
+    //             filter = 'Id IN: ProdIds';
+    //         }
+    //     }
+    //     if (filter != null){
+    //         sQuery = 'select id, Name from ' + ObjectName + ' where Name LIKE: searchKey AND ' + filter + ' order by Name ASC limit 5';
+    //     } else{
+    //         System.debug('Inisde 2nd one');
+    //         sQuery = 'select id, Name from ' + ObjectName + ' where Name LIKE: searchKey order by Name ASC limit 5';
+    //     }
+    //     system.debug('searchKey --------> ' + searchKey);
+    //     system.debug('sQuery --------> ' + sQuery);
+    //     List<sObject> lstOfRecords;
+    //     lstOfRecords = Database.query(sQuery);
+    //     for (sObject obj : lstOfRecords){
+    //         returnList.add(obj);
+    //     }
+    //     return returnList;
+    // }
     
     @AuraEnabled
     public static List<sObject> getTasksInSchedule(String searchKeyWord, String ObjectName, String filter, string parentId){
@@ -658,7 +650,7 @@ public with sharing class QuoteDAO{
         System.debug('########pricebook' + productId);
         list<PricebookEntry> pList = new list<PricebookEntry>();
 
-        pList = [select id, UnitPrice, buildertek__Unit_Cost__c, buildertek__Markup__c, buildertek__Discount__c, Product2Id, Product2.buildertek__Quote_Group__r.Name
+        pList = [select id, UnitPrice, buildertek__Unit_Cost__c, buildertek__Markup__c, buildertek__Discount__c, Product2Id, Product2.buildertek__Quote_Group__r.Name, Product2.QuantityUnitOfMeasure	
                  from PricebookEntry
                  where product2Id = :productId and pricebook2Id =: pricebookId];
 
@@ -2126,10 +2118,14 @@ public with sharing class QuoteDAO{
             newQline.buildertek__Status__c = 'Accept';
             newQline.buildertek__Quote__c = QuoteId;
             newQline.buildertek__Product_Family__c = qql.buildertek__Product_Family__c;
+            newQline.buildertek__UOM__c = qql.buildertek__UOM__c;
             insertListofQuoteLines.add(newQline); 
         }
-        insert insertListofQuoteLines;
-        return insertListofQuoteLines;
+
+
+            insert insertListofQuoteLines;
+            return insertListofQuoteLines;
+
     }
     
   /*    @AuraEnabled
@@ -2163,7 +2159,7 @@ public with sharing class QuoteDAO{
          if(pbookId != null && pbookId != 'None'){
              System.debug('If');
              //sort by Product2.Name
-             pEntries = [SELECT Id, Product2Id, Product2.Name,Product2.ProductCode,Product2.Description,toLabel(Product2.Family), Product2.IsActive,buildertek__Unit_Cost__c,Pricebook2.Name,UnitPrice FROM PricebookEntry WHERE Pricebook2Id=:pbookId AND IsActive = True];
+             pEntries = [SELECT Id, Product2Id, Product2.Name,Product2.ProductCode,Product2.Description,toLabel(Product2.Family), Product2.IsActive,buildertek__Unit_Cost__c,Pricebook2.Name,UnitPrice FROM PricebookEntry WHERE Pricebook2Id=:pbookId AND IsActive = True LIMIT 1000];
              System.debug('pEntries--->>>'+pEntries);
              List<Product2> products = new List<Product2>();
              for (PriceBookEntry pEntry: pEntries) {
@@ -2384,9 +2380,9 @@ public with sharing class QuoteDAO{
 
 
         List<PriceBookEntry> pEntries = [SELECT Id,Product2Id, Product2.buildertek__Quote_Group__c , Product2.Name, Product2.ProductCode, Product2.Description, toLabel(Product2.Family), 
-                                            Product2.IsActive,buildertek__Unit_Cost__c, buildertek__Markup__c, buildertek__Discount__c, Pricebook2.Name, UnitPrice
+                                            Product2.IsActive,buildertek__Unit_Cost__c, buildertek__Markup__c, buildertek__Discount__c, Pricebook2.Name, UnitPrice, Product2.QuantityUnitOfMeasure  //----
                                             FROM PricebookEntry WHERE Pricebook2Id=:pbookId AND IsActive = True 
-                                            ORDER BY Product2.Family ASC NULLS LAST, Product2.Name ASC NULLS LAST];
+                                            ORDER BY Product2.Family ASC NULLS LAST, Product2.Name ASC NULLS LAST LIMIT 1000];
 
         List<productWrapper> products = new List<productWrapper>();
         for (PriceBookEntry pEntry: pEntries) {
@@ -2404,6 +2400,38 @@ public with sharing class QuoteDAO{
             aProduct.Discount = pEntry.buildertek__Discount__c;
             aProduct.UnitCost = pEntry.buildertek__Unit_Cost__c;
             aProduct.Phase = pEntry.Product2.buildertek__Quote_Group__c;
+            aProduct.QuantityUnitOfMeasure = pEntry.Product2.QuantityUnitOfMeasure;     
+            products.add(aProduct);
+        }
+
+        return products;
+    }
+    @AuraEnabled
+    public static List<productWrapper> getProductsthroughProductFamily(string pbookId, string pfId) {
+
+
+        List<PriceBookEntry> pEntries = [SELECT Id,Product2Id, Product2.buildertek__Quote_Group__c , Product2.Name, Product2.ProductCode, Product2.Description, toLabel(Product2.Family), 
+                                            Product2.IsActive,buildertek__Unit_Cost__c, buildertek__Markup__c, buildertek__Discount__c, Pricebook2.Name, UnitPrice, Product2.QuantityUnitOfMeasure  //----
+                                            FROM PricebookEntry WHERE Pricebook2Id=:pbookId AND IsActive = True AND toLabel(Product2.Family)=:pfId
+                                            ORDER BY Product2.Family ASC NULLS LAST, Product2.Name ASC NULLS LAST LIMIT 1000];
+
+        List<productWrapper> products = new List<productWrapper>();
+        for (PriceBookEntry pEntry: pEntries) {
+            productWrapper aProduct = new productWrapper();
+            aProduct.Id = pEntry.Product2Id;
+            aProduct.Name = pEntry.Product2.Name;
+            aProduct.ProductCode = pEntry.Product2.ProductCode;
+            aProduct.Description = pEntry.Product2.Description;
+            aProduct.Family = pEntry.Product2.Family;
+            aProduct.IsActive = pEntry.Product2.IsActive;
+            aProduct.UnitPrice = pEntry.UnitPrice;            
+            aProduct.Size = pEntry.Pricebook2.Name;
+            aProduct.Selected = false;
+            aProduct.MarkUp = pEntry.buildertek__Markup__c;
+            aProduct.Discount = pEntry.buildertek__Discount__c;
+            aProduct.UnitCost = pEntry.buildertek__Unit_Cost__c;
+            aProduct.Phase = pEntry.Product2.buildertek__Quote_Group__c;
+            aProduct.QuantityUnitOfMeasure = pEntry.Product2.QuantityUnitOfMeasure;     //----
             products.add(aProduct);
         }
 
@@ -2458,8 +2486,186 @@ public with sharing class QuoteDAO{
 
         @AuraEnabled
         public Decimal Discount;
+
+        @AuraEnabled
+        public String QuantityUnitOfMeasure;        //----
     }
 
+    @AuraEnabled
+    public static List<sObject> getProductRecords(String searchKeyWord, String ObjectName, String filter, string parentId, string prodctfamly){
+        String[] searchTerms = searchKeyWord.split(' ');
+        String searchKey = '';
+        for (Integer i = 0; i < searchTerms.size(); i++) {
+            searchKey += 'Name LIKE \'%' + searchTerms[i] + '%\'';
+            if (i < searchTerms.size() - 1) {
+                searchKey += ' AND ';
+            }
+        }
+        List<sObject> returnList = new List<sObject>();
+        String sQuery;
+        list<string> ProdIds = new list<string>();
+        list<pricebookEntry> PElist;
+
+            if (ObjectName == 'Product2' && parentId != null && parentId != ''){
+
+                String familyFilter = '';
+                if (prodctfamly != 'All Families') {
+                    familyFilter = (prodctfamly == '--None--') ? 'AND toLabel(product2.family) = null' : 'AND toLabel(product2.family) = :prodctfamly';
+                }
+
+                String peQuery = 'SELECT id, Product2Id, product2.family FROM PricebookEntry WHERE pricebook2Id = :parentId ' + familyFilter;
+                PElist = Database.query(peQuery);
+
+                for (pricebookEntry PE : PElist){
+                     ProdIds.add(PE.Product2Id);
+                }
+                if (filter != null){
+                     filter = filter + ' AND Id IN: ProdIds';
+                }else{
+                     filter = 'Id IN: ProdIds';
+                } 
+
+            }else if(ObjectName == 'Product2' && (parentId == null || parentId == '')){
+                System.debug('inisde 2nd if');
+     
+                 PElist = [select id, Product2Id, product2.family from pricebookEntry];   
+                 for (pricebookEntry PE : PElist){
+                     ProdIds.add(PE.Product2Id);
+                 } 
+                 
+                 if (filter != null){
+                     filter = filter + ' AND Id NOT IN: ProdIds';
+                 }else{
+                     filter = 'Id NOT IN: ProdIds';
+                 }      
+            }
+        sQuery = 'select id, Name from ' + ObjectName + ' WHERE ' + searchKey + ' AND ' + filter + ' order by Name ASC LIMIT 800';
+        // Query Log
+        System.debug(sQuery);
+        // Query Log
+        List<sObject> lstOfRecords = Database.query(sQuery);
+
+        for (sObject obj : lstOfRecords){
+            returnList.add(obj);
+        }
+
+        return returnList;
+    }
+
+    @AuraEnabled
+    public static List<productWrapper> getProductsbyName(string pbookId, string pName) {
+        String[] searchTerms = pName.split(' ');
+        List<String> searchKeyParts = new List<String>();
+        
+        for (String term : searchTerms) {
+            searchKeyParts.add('Product2.Name LIKE \'%' + term + '%\'');
+        }
+        
+        String searchKey = String.join(searchKeyParts, ' AND ');
+        
+        String sQuery = 'SELECT Id, Product2Id, Product2.buildertek__Quote_Group__c, Product2.Name, Product2.ProductCode, Product2.Description, toLabel(Product2.Family), Product2.IsActive, buildertek__Unit_Cost__c, buildertek__Markup__c, buildertek__Discount__c, Pricebook2.Name, UnitPrice, Product2.QuantityUnitOfMeasure FROM PricebookEntry WHERE Pricebook2Id = :pbookId AND IsActive = True AND (' + searchKey + ') ORDER BY Product2.Family ASC NULLS LAST, Product2.Name ASC NULLS LAST LIMIT 1000';
+        
+        List<PriceBookEntry> pEntries = Database.query(sQuery);
     
+        List<productWrapper> products = new List<productWrapper>();
+        for (PriceBookEntry pEntry : pEntries) {
+            productWrapper aProduct = new productWrapper();
+            aProduct.Id = pEntry.Product2Id;
+            aProduct.Name = pEntry.Product2.Name;
+            aProduct.ProductCode = pEntry.Product2.ProductCode;
+            aProduct.Description = pEntry.Product2.Description;
+            aProduct.Family = pEntry.Product2.Family;
+            aProduct.IsActive = pEntry.Product2.IsActive;
+            aProduct.UnitPrice = pEntry.UnitPrice;
+            aProduct.Size = pEntry.Pricebook2.Name;
+            aProduct.Selected = false;
+            aProduct.MarkUp = pEntry.buildertek__Markup__c;
+            aProduct.Discount = pEntry.buildertek__Discount__c;
+            aProduct.UnitCost = pEntry.buildertek__Unit_Cost__c;
+            aProduct.Phase = pEntry.Product2.buildertek__Quote_Group__c;
+            aProduct.QuantityUnitOfMeasure = pEntry.Product2.QuantityUnitOfMeasure;
+            products.add(aProduct);
+        }    
+        return products;
+    }   
+
+
+    @AuraEnabled
+    public static List<productWrapper> getProductsbyNameandFamily(string pbookId, string pName, string pfId) {
+        String[] searchTerms = pName.split(' ');
+        List<String> searchKeyParts = new List<String>();
+        
+        for (String term : searchTerms) {
+            searchKeyParts.add('Product2.Name LIKE \'%' + term + '%\'');
+        }
+        
+        String searchKey = String.join(searchKeyParts, ' AND ');
+        
+        String sQuery = 'SELECT Id, Product2Id, Product2.buildertek__Quote_Group__c, Product2.Name, Product2.ProductCode, Product2.Description, toLabel(Product2.Family), Product2.IsActive, buildertek__Unit_Cost__c, buildertek__Markup__c, buildertek__Discount__c, Pricebook2.Name, UnitPrice, Product2.QuantityUnitOfMeasure FROM PricebookEntry WHERE Pricebook2Id = :pbookId AND IsActive = True AND toLabel(Product2.Family)=:pfId AND (' + searchKey + ') ORDER BY Product2.Family ASC NULLS LAST, Product2.Name ASC NULLS LAST LIMIT 1000';
+        
+        List<PriceBookEntry> pEntries = Database.query(sQuery);
     
+        List<productWrapper> products = new List<productWrapper>();
+        for (PriceBookEntry pEntry : pEntries) {
+            productWrapper aProduct = new productWrapper();
+            aProduct.Id = pEntry.Product2Id;
+            aProduct.Name = pEntry.Product2.Name;
+            aProduct.ProductCode = pEntry.Product2.ProductCode;
+            aProduct.Description = pEntry.Product2.Description;
+            aProduct.Family = pEntry.Product2.Family;
+            aProduct.IsActive = pEntry.Product2.IsActive;
+            aProduct.UnitPrice = pEntry.UnitPrice;
+            aProduct.Size = pEntry.Pricebook2.Name;
+            aProduct.Selected = false;
+            aProduct.MarkUp = pEntry.buildertek__Markup__c;
+            aProduct.Discount = pEntry.buildertek__Discount__c;
+            aProduct.UnitCost = pEntry.buildertek__Unit_Cost__c;
+            aProduct.Phase = pEntry.Product2.buildertek__Quote_Group__c;
+            aProduct.QuantityUnitOfMeasure = pEntry.Product2.QuantityUnitOfMeasure;
+            products.add(aProduct);
+        }
+    
+        return products;
+    }   
+
+
+
+    // >>>>>>>>>>> Changes For CHB - 78, 80 <<<<<<<<<<<<<<<<<<
+    @AuraEnabled
+    public static string CheckUserAccess(String AccessType){
+        // try {
+            switch on AccessType{
+                when 'Create'{
+                    if(Schema.sObjectType.buildertek__Quote_Item__c.isCreateable())
+                        {return 'True';}
+                    else{ return 'False'; }
+                }
+                when 'Update'{
+                    if(Schema.sObjectType.buildertek__Quote_Item__c.isUpdateable()){
+                        return 'True';
+                    }
+                    else{
+                        return 'False';
+                    }
+                }
+                when 'Delete'{
+                    if(Schema.sObjectType.buildertek__Quote_Item__c.isDeletable()){
+                        return 'True';
+                    }
+                    else{
+                        return 'False';
+                    }
+                }
+                when else{
+                    return null;
+                }
+            }
+            
+        // } catch (Exception e) {
+        //    System.debug('error in CheckUserHaveAcces >> ' + e);
+        //    return 'error';
+        // }
+    }
+    // >>>>>>>>>>> Changes For CHB - 78 <<<<<<<<<<<<<<<<<<
+
 }

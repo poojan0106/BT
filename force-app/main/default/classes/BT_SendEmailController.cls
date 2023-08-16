@@ -269,6 +269,17 @@ public with sharing class BT_SendEmailController{
         }
         return subject;
     }
+
+    @AuraEnabled
+    public Static String getBodyFromQuote(String recordId, String objectAPIName){
+        string body = '';
+        if (objectAPIName == 'buildertek__Quote__c'){
+            buildertek__Quote__c quoteRec = [select id, Name, buildertek__Email_Body__c from buildertek__Quote__c where Id =: recordId];
+            body = quoteRec.buildertek__Email_Body__c;
+        }
+        return body;
+    }
+
     @AuraEnabled
     public Static String SendEmail(List<String> to, List<String> cc, List<String> files, String subject, String body, String recordId, String templateId, String pdfFileName,List<String> emailIds){
         try{
@@ -537,7 +548,7 @@ public with sharing class BT_SendEmailController{
 
             // Attached record pdf as an attachment
             List<Messaging.Emailfileattachment> fileAttachments = new List<Messaging.Emailfileattachment>();
-            if (Id.valueOf(recordId).getSObjectType().getDescribe().getName() != 'buildertek__RFQ__c' && Id.valueOf(recordId).getSObjectType().getDescribe().getName() != 'buildertek__RFI__c' && Id.valueOf(recordId).getSObjectType().getDescribe().getName() != 'buildertek__Permit__c' && Id.valueOf(recordId).getSObjectType().getDescribe().getName() != 'buildertek__Billings__c'){
+            if (Id.valueOf(recordId).getSObjectType().getDescribe().getName() != 'buildertek__RFQ__c' && Id.valueOf(recordId).getSObjectType().getDescribe().getName() != 'buildertek__Permit__c' && Id.valueOf(recordId).getSObjectType().getDescribe().getName() != 'buildertek__Billings__c'){
                 if (String.isNotBlank(templateId)){
                     Messaging.Emailfileattachment efa = new Messaging.Emailfileattachment();
                     efa.setFileName(pdfFileName + '.pdf');

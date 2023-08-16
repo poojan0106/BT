@@ -249,7 +249,8 @@
     width: 45% !important;
 }
 .THIS .divcont{
-    max-height: 45vh;
+    /* min-height: 42vh; */
+    max-height: 42vh;
     overflow: auto;
 }
 
@@ -293,3 +294,26 @@
     max-height: 43vh;
     }
 }    */
+@media only screen and (max-height: 1080px) {
+    .THIS .divcont{
+        /* min-height: 42vh; */
+        max-height: 42vh;
+        overflow: auto;
+    }
+    /* .THIS .av{
+        min-height: auto !important;
+    } */
+  }
+.THIS .divcont1{
+    max-height: 60vh;
+    overflow: auto;
+
+    /* min-height: fit-content;
+    max-height: 100%;
+    overflow: auto; */
+}
+
+.THIS .divcount2{
+    /* min-height: 47vh !important; */
+    max-height: 47vh !important;
+}

@@ -2,12 +2,12 @@
 	searchHelper : function(component,event,getInputkeyWord) {
 	  // call the apex class method 
 	 
-    var productfamily=component.get("v.prodctfamly");
-    if(productfamily == '--None--'){
-      productfamily = productfamily.replace(/--/g, '');
-      console.log({productfamily});
+    // var productfamily=component.get("v.prodctfamly");
+    // if(productfamily == '--None--'){
+    //   productfamily = productfamily.replace(/--/g, '');
+    //   console.log({productfamily});
 
-    }
+    // }
      var action = component.get("c.getProductRecords");
      action.setStorable();
       // set param to method  
@@ -16,7 +16,7 @@
             'ObjectName' : component.get("v.objectAPIName"),
             'filter' : component.get("v.filter"),
             'parentId' : component.get("v.parentId"),
-            'prodctfamly' : productfamily
+            'prodctfamly' : component.get("v.prodctfamly")
           });
       // set a callBack  
       console.log( component.get("v.filter"));  
@@ -29,6 +29,7 @@
             var state = response.getState();
             if (state === "SUCCESS") {
                 var storeResponse = response.getReturnValue();
+                console.log({storeResponse});
               // if storeResponse size is equal 0 ,display No Result Found... message on screen.                }
                 if (storeResponse.length == 0) {
                     component.set("v.Message", 'No Result Found...');
@@ -43,7 +44,7 @@
         console.log(component.get("v.parentId") + '----------------------------->>>>>>>>');
       // enqueue the Action  
         $A.enqueueAction(action);
-        console.log(component.get("v.listOfSearchRecords"));
+        console.log('listof record-->',component.get("v.listOfSearchRecords"));
 
     
 	}

@@ -1,7 +1,24 @@
 ({  
-    save : function(component, event, helper) {
-        helper.save(component, helper);     
+    doInit : function(component, event, helper) {
+        helper.Check_Create_User_Access(component, event, helper);
     },
+    save : function(component, event, helper) {
+        if(component.get("v.HaveCreateAccess")){
+            helper.save(component, helper);     
+        }
+        else{
+            var toastEvent = $A.get("e.force:showToast");
+                toastEvent.setParams({
+                    "type": "error",
+                    "title": "Error!",
+                    "message": 'You don\'t have the necessary privileges to create this record.'
+                });
+                toastEvent.fire();
+        }
+    },
+    closeModel : function(component, event, helper){
+	    $A.get("e.force:closeQuickAction").fire();    
+	},
     
     onSelectFileHandler : function(component,event,helper){
         console.log('onfile select');

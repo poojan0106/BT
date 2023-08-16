@@ -12,7 +12,7 @@ public without sharing class ConfirmationpageAsPDFController{
     public DateTime customerAcceptedDate{ get; set; }
     
     public String imgId{ get; set; }
-    
+
     public ConfirmationpageAsPDFController(){
         recordID = ApexPages.currentPage().getParameters().get('Id');
         templateId = apexpages.currentPage().getParameters().get('templateId');

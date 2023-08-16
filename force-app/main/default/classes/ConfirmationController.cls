@@ -272,13 +272,14 @@ public without sharing class ConfirmationController{
             insert conDocLink;
             system.debug('objectAPIName-----' + objectAPIName);
             if (objectAPIName.contains('buildertek__Contract__c')){
-                buildertek__Contract__c contractrec = [select id, Name, buildertek__Status__c, buildertek__Customer_Accepted_Date__c, buildertek__Project__c, buildertek__Signed_Contract_Date__c
+                buildertek__Contract__c contractrec = [select id, Name, buildertek__Status__c, buildertek__Customer_Accepted_Date__c, buildertek__Project__c, buildertek__Signed_Contract_Date__c, buildertek__Contract_Rejection_Reason__c
                                                        from buildertek__Contract__c
                                                        where Id = :recordID
                                                        limit 1];
                 if (contractrec != null){
                     contractrec.buildertek__Customer_Accepted_Date__c = system.today();
-                    contractrec.buildertek__Status__c = 'Accepted';
+                    contractrec.buildertek__Status__c = 'Rejected';
+                    contractrec.buildertek__Contract_Rejection_Reason__c = rejectionReason;
                     update contractrec;
                 }
             }
@@ -554,10 +555,10 @@ Messaging.sendEmail(new Messaging.SingleEmailMessage[] { email });  */
         transient Date nowDT = Date.today();
         System.debug('Check Debug log ==> '+nowDT);
         customerAcceptedDate = String.valueOf(DateTime.now());
-        ContentVersion conVer = new ContentVersion();
-        conVer.ContentLocation = 'S'; // to use S specify this document is in Salesforce, to use E for external files
-        conVer.PathOnClient = 'SignatureName.png'; // The files name, extension is very important here which will help the file in preview.
-        conVer.Title = 'Signature' + ' ' + nowDT; // Display name of the files
+            ContentVersion conVer = new ContentVersion();
+            conVer.ContentLocation = 'S'; // to use S specify this document is in Salesforce, to use E for external files
+            conVer.PathOnClient = 'SignatureName.png'; // The files name, extension is very important here which will help the file in preview.
+            conVer.Title = 'Signature' + ' ' + nowDT; // Display name of the files
         conVer.VersionData = EncodingUtil.base64Decode(imageContent);  // converting your binary string to Blog
         insert conVer;
         // First get the Content Document Id from ContentVersion Object
@@ -583,7 +584,7 @@ Messaging.sendEmail(new Messaging.SingleEmailMessage[] { email });  */
                                              FROM ContentDistribution
                                              WHERE Id = :cd.Id];
         cdId = cdPublickLink.Id;
-
+        
         if (objectAPIName.contains('buildertek__Contract__c')){
             buildertek__Contract__c contractrec = [select id, Name, buildertek__Status__c, buildertek__Customer_Accepted_Date__c, buildertek__Project__c, buildertek__Signed_Contract_Date__c
                                                    from buildertek__Contract__c
@@ -641,6 +642,14 @@ Messaging.sendEmail(new Messaging.SingleEmailMessage[] { email });  */
                     mail.setOrgWideEmailAddressId(owea.get(0).Id);
                 }
                 mail.setSubject('SavePDF [ref:' + quoterec.Id + ']');
+                mail.setSaveAsActivity(false);
+                System.debug('templateId: ' + templateId);
+                if (templateId == null){
+                    templateId = [SELECT Id
+                                  FROM EmailTemplate
+                                  WHERE DeveloperName = :'Quote_Template_2'].Id;
+                }
+                System.debug('templateId: ' + templateId);
                 mail.setHtmlBody('Action:SavePDF; recordId:' + quoterec.Id + ';templateId:' + templateId + ';fileId:' + conVer.Id+'; Confirmation Controller');
                 Messaging.sendEmail(new Messaging.SingleEmailMessage[]{ mail });
 
@@ -708,6 +717,25 @@ Messaging.sendEmail(new Messaging.SingleEmailMessage[] { email });  */
             conVer.ContentLocation = 'S'; // to use S specify this document is in Salesforce, to use E for external files
             conVer.PathOnClient = 'Purchase Order Lien.pdf'; // The files name, extension is very important here which will help the file in preview.
             conVer.Title = 'Purchase Order Lien' + ' ' + Datetime.valueOf(customerAcceptedDate).format('MM-dd-yyyy HH:mm:ss')+'.pdf'; // Display name of the files
+            conVer.VersionData = pdfBlob;  // converting your binary string to Blog
+            insert conVer;
+            // First get the Content Document Id from ContentVersion Object
+            Id conDoc = [SELECT ContentDocumentId
+                         FROM ContentVersion
+                         WHERE Id = :conVer.Id].ContentDocumentId;
+            //create ContentDocumentLink  record
+            transient ContentDocumentLink conDocLink = New ContentDocumentLink();
+            conDocLink.LinkedEntityId = recordID; // Specify RECORD ID here i.e Any Object ID (Standard Object/Custom Object)
+            conDocLink.ContentDocumentId = conDoc;  //ContentDocumentId Id from ContentVersion
+            conDocLink.shareType = 'I';
+            conDocLink.Visibility = 'AllUsers';
+            insert conDocLink;
+        }
+        else if (objectAPIName.contains('buildertek__Change_Order__c')){
+            transient ContentVersion conVer = new ContentVersion();
+            conVer.ContentLocation = 'S'; // to use S specify this document is in Salesforce, to use E for external files
+            conVer.PathOnClient = 'ChangeOrder.pdf'; // The files name, extension is very important here which will help the file in preview.
+            conVer.Title = 'ChangeOrder' + ' ' + Datetime.valueOf(customerAcceptedDate).format('MM-dd-yyyy HH:mm:ss')+'.pdf'; // Display name of the files
             conVer.VersionData = pdfBlob;  // converting your binary string to Blog
             insert conVer;
             // First get the Content Document Id from ContentVersion Object
